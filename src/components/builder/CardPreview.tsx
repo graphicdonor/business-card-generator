@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { CardData } from "@/types/card";
 import TemplateRenderer from "@/components/templates/TemplateRenderer";
 import { cn } from "@/lib/utils";
@@ -14,6 +14,10 @@ interface Props {
   onSideChange?: (side: "front" | "back") => void;
 }
 
+const CARD_NATIVE_W = 1050;
+const CARD_NATIVE_H = 600;
+const MAX_CARD_W = 700;
+
 export default function CardPreview({ templateId, data, showBothSides = false, activeSide: activeSideProp, onSideChange }: Props) {
   const [activeSideLocal, setActiveSideLocal] = useState<"front" | "back">("front");
   const activeSide = activeSideProp ?? activeSideLocal;
@@ -21,14 +25,28 @@ export default function CardPreview({ templateId, data, showBothSides = false, a
   const [zoom, setZoom] = useState(1);
   const [showSafeArea, setShowSafeArea] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const [containerWidth, setContainerWidth] = useState(800);
 
-  const cardW = 700;
-  const cardH = 400;
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(([entry]) => {
+      setContainerWidth(entry.contentRect.width);
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  // Fit card to container with padding; never exceed MAX_CARD_W
+  const padding = containerWidth < 640 ? 16 : 64;
+  const cardW = Math.min(MAX_CARD_W, Math.max(240, containerWidth - padding));
+  const cardH = Math.round(cardW * CARD_NATIVE_H / CARD_NATIVE_W);
 
   return (
     <div className="h-full flex flex-col bg-slate-50">
       {/* Preview toolbar */}
-      <div className="flex items-center justify-between px-6 py-3 bg-white border-b border-slate-100">
+      <div className="flex items-center justify-between px-3 sm:px-6 py-2 sm:py-3 bg-white border-b border-slate-100 gap-2">
+        {/* Front / Back toggle */}
         <div className="flex items-center gap-1 bg-slate-100 rounded-lg p-1">
           {(["front", "back"] as const).map((side) => (
             <button
@@ -36,7 +54,7 @@ export default function CardPreview({ templateId, data, showBothSides = false, a
               onClick={() => setActiveSide(side)}
               disabled={side === "back" && !data.isDoubleSided}
               className={cn(
-                "px-4 py-1.5 text-xs font-medium rounded-md capitalize transition-all",
+                "px-3 sm:px-4 py-1.5 text-xs font-medium rounded-md capitalize transition-all",
                 activeSide === side
                   ? "bg-white text-slate-800 shadow-sm"
                   : "text-slate-500 hover:text-slate-700",
@@ -48,41 +66,43 @@ export default function CardPreview({ templateId, data, showBothSides = false, a
           ))}
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 sm:gap-2">
+          {/* Safe area — icon only on mobile */}
           <button
             onClick={() => setShowSafeArea(!showSafeArea)}
             className={cn(
-              "flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg transition-all border",
+              "flex items-center gap-1.5 px-2 sm:px-3 py-1.5 text-xs rounded-lg transition-all border",
               showSafeArea
                 ? "bg-amber-50 text-amber-600 border-amber-200"
                 : "bg-white text-slate-500 border-slate-200 hover:border-slate-300"
             )}
           >
             {showSafeArea ? <Eye size={13} /> : <EyeOff size={13} />}
-            Safe Area
+            <span className="hidden sm:inline">Safe Area</span>
           </button>
 
-          <div className="flex items-center gap-1 bg-white border border-slate-200 rounded-lg p-1">
+          {/* Zoom controls */}
+          <div className="flex items-center gap-0.5 sm:gap-1 bg-white border border-slate-200 rounded-lg p-1">
             <button
               onClick={() => setZoom(Math.max(0.4, zoom - 0.1))}
-              className="p-1.5 hover:bg-slate-50 rounded-md text-slate-500 transition-colors"
+              className="p-1 sm:p-1.5 hover:bg-slate-50 rounded-md text-slate-500 transition-colors"
             >
-              <ZoomOut size={14} />
+              <ZoomOut size={13} />
             </button>
-            <span className="text-xs font-medium text-slate-600 w-12 text-center">
+            <span className="text-xs font-medium text-slate-600 w-9 sm:w-12 text-center tabular-nums">
               {Math.round(zoom * 100)}%
             </span>
             <button
-              onClick={() => setZoom(Math.min(1.5, zoom + 0.1))}
-              className="p-1.5 hover:bg-slate-50 rounded-md text-slate-500 transition-colors"
+              onClick={() => setZoom(Math.min(2, zoom + 0.1))}
+              className="p-1 sm:p-1.5 hover:bg-slate-50 rounded-md text-slate-500 transition-colors"
             >
-              <ZoomIn size={14} />
+              <ZoomIn size={13} />
             </button>
             <button
               onClick={() => setZoom(1)}
-              className="p-1.5 hover:bg-slate-50 rounded-md text-slate-500 transition-colors"
+              className="p-1 sm:p-1.5 hover:bg-slate-50 rounded-md text-slate-500 transition-colors"
             >
-              <RotateCcw size={14} />
+              <RotateCcw size={13} />
             </button>
           </div>
         </div>
@@ -91,7 +111,7 @@ export default function CardPreview({ templateId, data, showBothSides = false, a
       {/* Preview area */}
       <div
         ref={containerRef}
-        className="flex-1 flex items-center justify-center p-8 overflow-auto"
+        className="flex-1 flex items-center justify-center p-2 sm:p-8 overflow-auto"
         style={{
           background: "radial-gradient(circle at center, #e2e8f0 1px, transparent 1px)",
           backgroundSize: "24px 24px",
@@ -102,7 +122,6 @@ export default function CardPreview({ templateId, data, showBothSides = false, a
           style={{ transform: `scale(${zoom})`, transition: "transform 0.2s ease" }}
           className="relative"
         >
-          {/* Card shadow */}
           <div
             className="rounded-2xl overflow-hidden"
             style={{
@@ -116,25 +135,22 @@ export default function CardPreview({ templateId, data, showBothSides = false, a
                 templateId={templateId}
                 data={data}
                 side={activeSide}
-                scale={cardW / 1050}
+                scale={cardW / CARD_NATIVE_W}
               />
             </div>
           </div>
 
-          {/* Safe area overlay */}
           {showSafeArea && (
             <div
               className="absolute inset-0 pointer-events-none"
               style={{
                 border: "2px dashed rgba(245, 158, 11, 0.6)",
                 borderRadius: "8px",
-                margin: `${(cardH * 0.05)}px ${(cardW * 0.05)}px`,
+                margin: `${cardH * 0.05}px ${cardW * 0.05}px`,
                 backgroundColor: "rgba(245, 158, 11, 0.03)",
               }}
             />
           )}
-
-          {/* Bleed area indicator */}
           {showSafeArea && (
             <div
               className="absolute pointer-events-none"
@@ -149,7 +165,7 @@ export default function CardPreview({ templateId, data, showBothSides = false, a
       </div>
 
       {/* Card size indicator */}
-      <div className="px-6 py-3 bg-white border-t border-slate-100">
+      <div className="px-3 sm:px-6 py-2 sm:py-3 bg-white border-t border-slate-100">
         <div className="flex items-center justify-between text-xs text-slate-400">
           <span>
             {data.cardSize === "us"
@@ -158,14 +174,14 @@ export default function CardPreview({ templateId, data, showBothSides = false, a
               ? "EU Standard: 85 × 55 mm"
               : "India Standard: 90 × 55 mm"}
           </span>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             {showSafeArea && (
               <>
-                <span className="flex items-center gap-1">
+                <span className="hidden sm:flex items-center gap-1">
                   <span className="w-3 h-0.5 bg-amber-400 inline-block border-b border-dashed border-amber-400" />
                   Safe Area
                 </span>
-                <span className="flex items-center gap-1">
+                <span className="hidden sm:flex items-center gap-1">
                   <span className="w-3 h-0.5 bg-red-400 inline-block border-b border-dashed border-red-400" />
                   Bleed (3mm)
                 </span>

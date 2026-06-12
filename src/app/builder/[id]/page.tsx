@@ -14,8 +14,9 @@ import {
   Save,
   Layers,
   Sparkles,
-  ChevronRight,
   RefreshCw,
+  Eye,
+  SlidersHorizontal,
 } from "lucide-react";
 
 interface Props {
@@ -44,8 +45,8 @@ export default function BuilderPage({ params }: Props) {
   const [exportOpen, setExportOpen] = useState(false);
   const [saved, setSaved] = useState(false);
   const [activeSide, setActiveSide] = useState<"front" | "back">("front");
+  const [mobileView, setMobileView] = useState<"edit" | "preview">("edit");
 
-  // Restore extracted card data when navigating from the custom-upload template
   useEffect(() => {
     const pending = localStorage.getItem("pendingCardData");
     if (pending) {
@@ -70,7 +71,6 @@ export default function BuilderPage({ params }: Props) {
   };
 
   const handleSave = () => {
-    // Save to localStorage
     const key = `card-${id}-${Date.now()}`;
     localStorage.setItem(key, JSON.stringify(cardData));
     setSaved(true);
@@ -94,9 +94,9 @@ export default function BuilderPage({ params }: Props) {
   return (
     <div className="h-screen flex flex-col bg-slate-50 overflow-hidden">
       {/* Top Navbar */}
-      <header className="flex-shrink-0 bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between gap-4 z-30">
+      <header className="flex-shrink-0 bg-white border-b border-slate-200 px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between gap-2 sm:gap-4 z-30">
         {/* Left: Nav */}
-        <div className="flex items-center gap-3 min-w-0">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
           <Link
             href="/"
             className="flex items-center gap-1.5 text-slate-500 hover:text-slate-700 text-sm transition-colors flex-shrink-0"
@@ -104,10 +104,9 @@ export default function BuilderPage({ params }: Props) {
             <ArrowLeft size={16} />
             <span className="hidden sm:inline">Templates</span>
           </Link>
-          <span className="text-slate-200">/</span>
+          <span className="hidden sm:block text-slate-200">/</span>
 
-          {/* Breadcrumb */}
-          <div className="flex items-center gap-1 min-w-0">
+          <div className="hidden sm:flex items-center gap-1 min-w-0">
             <span className="flex items-center gap-1.5 text-sm font-medium text-slate-800 truncate">
               <div className="w-5 h-5 bg-gradient-to-br from-blue-600 to-violet-600 rounded flex items-center justify-center flex-shrink-0">
                 <Sparkles size={10} className="text-white" />
@@ -122,7 +121,7 @@ export default function BuilderPage({ params }: Props) {
           </div>
         </div>
 
-        {/* Center: Card size selector */}
+        {/* Center: Card size selector — hidden on mobile */}
         <div className="hidden md:flex items-center gap-1 bg-slate-100 rounded-lg p-1 text-xs font-medium">
           {([
             { id: "us", label: "US  3.5×2″" },
@@ -145,8 +144,8 @@ export default function BuilderPage({ params }: Props) {
         </div>
 
         {/* Right: Actions */}
-        <div className="flex items-center gap-2 flex-shrink-0">
-          {/* Double-sided toggle */}
+        <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+          {/* Double-sided toggle — hidden on small mobile */}
           <button
             onClick={() => handleChange({ isDoubleSided: !cardData.isDoubleSided })}
             className={cn(
@@ -166,43 +165,81 @@ export default function BuilderPage({ params }: Props) {
             className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-all"
             title="Reset to defaults"
           >
-            <RefreshCw size={16} />
+            <RefreshCw size={15} />
           </button>
 
           {/* Save */}
           <button
             onClick={handleSave}
             className={cn(
-              "flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-lg border transition-all",
+              "flex items-center gap-1.5 px-2.5 sm:px-3 py-2 text-xs font-semibold rounded-lg border transition-all",
               saved
                 ? "bg-green-50 text-green-600 border-green-200"
                 : "bg-white text-slate-600 border-slate-200 hover:border-slate-300"
             )}
           >
             <Save size={14} />
-            {saved ? "Saved!" : "Save"}
+            <span className="hidden sm:inline">{saved ? "Saved!" : "Save"}</span>
           </button>
 
           {/* Export */}
           <button
             onClick={() => setExportOpen(true)}
-            className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow-sm shadow-blue-500/20 transition-all"
+            className="flex items-center gap-1.5 px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow-sm shadow-blue-500/20 transition-all"
           >
-            <Download size={15} />
-            Export
+            <Download size={14} />
+            <span>Export</span>
           </button>
         </div>
       </header>
 
+      {/* Mobile Edit/Preview toggle */}
+      <div className="flex sm:hidden flex-shrink-0 bg-white border-b border-slate-200">
+        <button
+          onClick={() => setMobileView("edit")}
+          className={cn(
+            "flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-medium transition-colors border-b-2",
+            mobileView === "edit"
+              ? "text-blue-600 border-blue-600"
+              : "text-slate-500 border-transparent"
+          )}
+        >
+          <SlidersHorizontal size={15} />
+          Edit
+        </button>
+        <button
+          onClick={() => setMobileView("preview")}
+          className={cn(
+            "flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-medium transition-colors border-b-2",
+            mobileView === "preview"
+              ? "text-blue-600 border-blue-600"
+              : "text-slate-500 border-transparent"
+          )}
+        >
+          <Eye size={15} />
+          Preview
+        </button>
+      </div>
+
       {/* Main Layout */}
-      <div className="flex flex-1 min-h-0">
+      <div className="flex flex-1 min-h-0 flex-col sm:flex-row">
         {/* Left Panel: Form */}
-        <aside className="w-[360px] flex-shrink-0 border-r border-slate-200 overflow-hidden flex flex-col bg-white">
+        <aside
+          className={cn(
+            "sm:w-[360px] sm:flex-shrink-0 border-r border-slate-200 overflow-hidden flex flex-col bg-white",
+            mobileView === "edit" ? "flex flex-1 sm:flex-none" : "hidden sm:flex"
+          )}
+        >
           <FormPanel data={cardData} onChange={handleChange} templateId={id} side={activeSide} />
         </aside>
 
         {/* Right Panel: Preview */}
-        <main className="flex-1 min-w-0 overflow-hidden">
+        <main
+          className={cn(
+            "sm:flex-1 sm:min-w-0 overflow-hidden",
+            mobileView === "preview" ? "flex flex-col flex-1" : "hidden sm:block"
+          )}
+        >
           <CardPreview templateId={id} data={cardData} activeSide={activeSide} onSideChange={setActiveSide} />
         </main>
       </div>
