@@ -33,6 +33,7 @@ export default function RDashPro({ data, side = "front", scale = 1 }: Props) {
   const aScale = (data.fontSizeAddress     ?? 100) / 100;
   const cScale = (data.fontSizeCompany     ?? 100) / 100;
   const wScale = (data.fontSizeWebsite     ?? 100) / 100;
+  const sScale = (data.fontSizeSlogan      ?? 100) / 100;
 
   const frontLogo = data.logoUrlFront ?? data.logoUrl;
   const backLogo  = data.logoUrlBack  ?? data.logoUrl;
@@ -97,19 +98,19 @@ export default function RDashPro({ data, side = "front", scale = 1 }: Props) {
           </text>
         )}
 
-        {/* Tagline / website */}
-        {data.website && (
+        {/* Tagline / slogan on back */}
+        {data.slogan && (
           <text
             x={W / 2}
             y={backLogo ? bY + bHt + 38 : H / 2 + 55}
             textAnchor="middle"
             fill={red}
-            fontSize={13 * wScale}
+            fontSize={13 * sScale}
             fontWeight="600"
             fontFamily={font}
             letterSpacing="2.5"
           >
-            {data.website.replace(/^https?:\/\//, "")}
+            {data.slogan}
           </text>
         )}
       </svg>
@@ -301,18 +302,18 @@ export default function RDashPro({ data, side = "front", scale = 1 }: Props) {
           </text>
         )}
 
-        {/* Tagline / slogan – plain text, size follows detail scale */}
-        {data.website && (
+        {/* Slogan – right panel tagline, independent from website URL */}
+        {data.slogan && (
           <text
             x={RIGHT_CX}
             y={158}
             textAnchor="middle"
             fill="white"
             opacity="0.65"
-            fontSize={13 * wScale}
+            fontSize={13 * sScale}
             fontFamily={font}
           >
-            {data.website.replace(/^https?:\/\//, "")}
+            {data.slogan}
           </text>
         )}
 

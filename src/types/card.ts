@@ -31,8 +31,12 @@ export interface CardData {
   fontSizeTitle: number;
   fontSizeDetails: number;
 
+  // Slogan / tagline (separate from website URL)
+  slogan: string;
+
   // Per-field font sizes (independent controls per input)
   fontSizeDesignation: number;
+  fontSizeSlogan: number;
   fontSizeEmail: number;
   fontSizePhone: number;
   fontSizeAddress: number;

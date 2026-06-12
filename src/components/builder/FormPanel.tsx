@@ -465,7 +465,7 @@ export default function FormPanel({ data, onChange, templateId, side = "front" }
             )}
 
             <Section title={side === "back" ? "Back Side" : "Personal Info"}>
-              {/* Front-side fields: Name, Designation */}
+              {/* Front-side fields: Name, Designation, Slogan */}
               {side !== "back" && (
                 <>
                   <div>
@@ -485,6 +485,15 @@ export default function FormPanel({ data, onChange, templateId, side = "front" }
                       placeholder="Senior Product Designer"
                     />
                     <FontSizeInline value={data.fontSizeTitle ?? 100} onChange={(v) => onChange({ fontSizeTitle: v })} />
+                  </div>
+                  <div>
+                    <InputField
+                      label="Slogan / Tagline"
+                      value={data.slogan ?? ""}
+                      onChange={(v) => onChange({ slogan: v })}
+                      placeholder="Innovating your future"
+                    />
+                    <FontSizeInline value={data.fontSizeSlogan ?? 100} onChange={(v) => onChange({ fontSizeSlogan: v })} />
                   </div>
                 </>
               )}
@@ -597,17 +606,28 @@ export default function FormPanel({ data, onChange, templateId, side = "front" }
                 </div>
               </>
             )}
-            {/* Back-side: website/tagline only */}
+            {/* Back-side: slogan + website */}
             {side === "back" && (
-              <div>
-                <InputField
-                  label="Website / Tagline"
-                  value={data.website}
-                  onChange={(v) => onChange({ website: v })}
-                  placeholder="www.company.com"
-                />
-                <FontSizeInline value={data.fontSizeWebsite ?? 100} onChange={(v) => onChange({ fontSizeWebsite: v })} />
-              </div>
+              <>
+                <div>
+                  <InputField
+                    label="Slogan / Tagline"
+                    value={data.slogan ?? ""}
+                    onChange={(v) => onChange({ slogan: v })}
+                    placeholder="Innovating your future"
+                  />
+                  <FontSizeInline value={data.fontSizeSlogan ?? 100} onChange={(v) => onChange({ fontSizeSlogan: v })} />
+                </div>
+                <div>
+                  <InputField
+                    label="Website"
+                    value={data.website}
+                    onChange={(v) => onChange({ website: v })}
+                    placeholder="www.company.com"
+                  />
+                  <FontSizeInline value={data.fontSizeWebsite ?? 100} onChange={(v) => onChange({ fontSizeWebsite: v })} />
+                </div>
+              </>
             )}
           </Section>
         )}
