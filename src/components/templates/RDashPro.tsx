@@ -227,7 +227,7 @@ export default function RDashPro({ data, side = "front", scale = 1 }: Props) {
                 fill={navy}
               />
             </g>
-            <text x={26} y={15} fill={navy} fontSize={17 * eScale} fontFamily={font}>
+            <text x={46} y={15} fill={navy} fontSize={17 * eScale} fontFamily={font}>
               {data.email}
             </text>
           </g>
