@@ -21,10 +21,14 @@ export function getQRValue(data: CardData): string {
       return data.qrCodeValue || data.linkedin || "";
     case "custom":
       return data.qrCodeValue || "";
-    case "vcard":
+    case "vcard": {
+      const nameParts = (data.fullName || "").trim().split(/\s+/);
+      const firstName = nameParts[0] || "";
+      const lastName = nameParts.slice(1).join(" ");
       return [
         "BEGIN:VCARD",
         "VERSION:3.0",
+        `N:${lastName};${firstName};;;`,
         `FN:${data.fullName}`,
         data.designation ? `TITLE:${data.designation}` : "",
         data.company ? `ORG:${data.company}` : "",
@@ -37,6 +41,7 @@ export function getQRValue(data: CardData): string {
       ]
         .filter(Boolean)
         .join("\r\n");
+    }
     default:
       return data.website || "";
   }

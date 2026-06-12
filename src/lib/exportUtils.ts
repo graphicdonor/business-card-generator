@@ -59,9 +59,13 @@ export function exportAsSVG(svgElementId: string, filename: string = "business-c
 }
 
 export function generateVCard(data: CardData): string {
+  const nameParts = (data.fullName || "").trim().split(/\s+/);
+  const firstName = nameParts[0] || "";
+  const lastName = nameParts.slice(1).join(" ");
   const lines = [
     "BEGIN:VCARD",
     "VERSION:3.0",
+    `N:${lastName};${firstName};;;`,
     `FN:${data.fullName}`,
     data.company ? `ORG:${data.company}` : "",
     data.designation ? `TITLE:${data.designation}` : "",
