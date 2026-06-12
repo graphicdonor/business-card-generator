@@ -34,14 +34,14 @@ async function verifyAdmin(request: NextRequest): Promise<boolean> {
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const isAdmin = await verifyAdmin(request);
   if (!isAdmin) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const userId = params.id;
+  const { id: userId } = await params;
   if (!userId) {
     return NextResponse.json({ error: "User ID is required" }, { status: 400 });
   }
