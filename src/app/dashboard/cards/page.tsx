@@ -3,13 +3,15 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import TemplateRenderer from "@/components/templates/TemplateRenderer";
+import { CardData } from "@/types/card";
 import { CreditCard, Plus, Trash2, Edit2, Calendar, Loader2 } from "lucide-react";
 
 interface SavedCard {
   id: string;
   name: string;
   template_id: string;
-  card_data: Record<string, unknown>;
+  card_data: unknown;
   created_at: string;
   updated_at: string;
 }
@@ -84,18 +86,15 @@ export default function CardsPage() {
               key={card.id}
               className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden group hover:shadow-md hover:border-slate-200 transition-all"
             >
-              {/* Card preview placeholder */}
-              <div className="h-32 bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center relative overflow-hidden">
-                <div className="absolute inset-0 opacity-10">
-                  <div className="absolute top-3 left-4 w-16 h-1 bg-white rounded" />
-                  <div className="absolute top-6 left-4 w-10 h-0.5 bg-white rounded" />
-                  <div className="absolute bottom-4 right-4 w-10 h-10 border border-white/30 rounded" />
-                </div>
-                <CreditCard size={28} className="text-white/30" />
-                <div className="absolute bottom-2 left-3 right-3">
-                  <p className="text-[10px] font-bold text-white/60 uppercase tracking-wider truncate">
-                    {(card.card_data as { fullName?: string }).fullName || card.name}
-                  </p>
+              {/* Live card preview */}
+              <div className="relative overflow-hidden bg-slate-100" style={{ height: 128 }}>
+                <div style={{ transform: "scale(0.228)", transformOrigin: "top left", width: 1050, height: 600, pointerEvents: "none" }}>
+                  <TemplateRenderer
+                    templateId={card.template_id}
+                    data={card.card_data as unknown as CardData}
+                    side="front"
+                    scale={1}
+                  />
                 </div>
               </div>
 
@@ -109,7 +108,7 @@ export default function CardsPage() {
 
               <div className="px-4 pb-4 flex gap-2">
                 <Link
-                  href={`/?cardId=${card.id}`}
+                  href={`/builder/${card.template_id}?cardId=${card.id}`}
                   className="flex-1 flex items-center justify-center gap-1.5 border border-slate-200 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-600 text-slate-500 text-xs font-semibold py-2 rounded-xl transition-colors"
                 >
                   <Edit2 size={12} />

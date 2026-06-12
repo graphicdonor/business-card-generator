@@ -1,7 +1,9 @@
 "use client";
 
-import { useState, use, useEffect } from "react";
+import { useState, use, useEffect, useRef } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 import { getTemplate, defaultCardData } from "@/lib/templates";
 import { CardData } from "@/types/card";
 import FormPanel from "@/components/builder/FormPanel";
@@ -26,8 +28,9 @@ interface Props {
   params: Promise<{ id: string }>;
 }
 
-export default function BuilderPage({ params }: Props) {
-  const { id } = use(params);
+function BuilderInner({ id }: { id: string }) {
+  const searchParams = useSearchParams();
+  const cardId = searchParams.get("cardId");
   const template = getTemplate(id);
 
   const [cardData, setCardData] = useState<CardData>(
@@ -51,8 +54,30 @@ export default function BuilderPage({ params }: Props) {
   const [cloudSaving, setCloudSaving] = useState(false);
   const [activeSide, setActiveSide] = useState<"front" | "back">("front");
   const [mobileView, setMobileView] = useState<"edit" | "preview">("edit");
+  const [loadingCard, setLoadingCard] = useState(!!cardId);
+  const loadedRef = useRef(false);
 
+  // Load saved card from Supabase if cardId is in URL
   useEffect(() => {
+    if (!cardId || loadedRef.current) return;
+    loadedRef.current = true;
+    const supabase = createClient();
+    supabase
+      .from("business_cards")
+      .select("card_data")
+      .eq("id", cardId)
+      .single()
+      .then(({ data }) => {
+        if (data?.card_data) {
+          setCardData(data.card_data as CardData);
+        }
+        setLoadingCard(false);
+      });
+  }, [cardId]);
+
+  // Load from localStorage (pending data from old flow)
+  useEffect(() => {
+    if (cardId) return; // skip if editing a saved card
     const pending = localStorage.getItem("pendingCardData");
     if (pending) {
       localStorage.removeItem("pendingCardData");
@@ -63,7 +88,7 @@ export default function BuilderPage({ params }: Props) {
         // ignore malformed data
       }
     }
-  }, []);
+  }, [cardId]);
 
   const handleChange = (updates: Partial<CardData>) => {
     setCardData((prev) => ({ ...prev, ...updates }));
@@ -87,22 +112,40 @@ export default function BuilderPage({ params }: Props) {
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-      window.location.href = `/auth/login?redirect=/builder/${id}`;
+      window.location.href = `/auth/login?redirect=/builder/${id}${cardId ? `?cardId=${cardId}` : ""}`;
       return;
     }
     const cardName = cardData.fullName
       ? `${cardData.fullName}${template?.name ? ` — ${template.name}` : ""}`
       : `Card ${new Date().toLocaleDateString()}`;
-    await supabase.from("business_cards").insert({
-      user_id: user.id,
-      name: cardName,
-      template_id: id,
-      card_data: cardData,
-    });
+
+    if (cardId) {
+      // Update existing saved card
+      await supabase.from("business_cards").update({ card_data: cardData, name: cardName }).eq("id", cardId);
+    } else {
+      // Create new saved card
+      await supabase.from("business_cards").insert({
+        user_id: user.id,
+        name: cardName,
+        template_id: id,
+        card_data: cardData,
+      });
+    }
     setCloudSaving(false);
     setCloudSaved(true);
     setTimeout(() => setCloudSaved(false), 3000);
   };
+
+  if (loadingCard) {
+    return (
+      <div className="h-screen flex items-center justify-center bg-slate-50">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+          <p className="text-sm text-slate-400">Loading card...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!template) {
     return (
@@ -296,5 +339,18 @@ export default function BuilderPage({ params }: Props) {
         templateName={template.name}
       />
     </div>
+  );
+}
+
+export default function BuilderPage({ params }: Props) {
+  const { id } = use(params);
+  return (
+    <Suspense fallback={
+      <div className="h-screen flex items-center justify-center bg-slate-50">
+        <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+      </div>
+    }>
+      <BuilderInner id={id} />
+    </Suspense>
   );
 }
