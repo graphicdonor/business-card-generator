@@ -485,16 +485,6 @@ export default function FormPanel({ data, onChange, templateId }: Props) {
               </Section>
             )}
 
-            {tpl.showAddress && (
-              <Section title="Address">
-                <InputField
-                  label="Office Address"
-                  value={data.address}
-                  onChange={(v) => onChange({ address: v })}
-                  placeholder="123 Design Street, San Francisco, CA"
-                />
-              </Section>
-            )}
           </>
         )}
 
@@ -515,6 +505,14 @@ export default function FormPanel({ data, onChange, templateId }: Props) {
                 onChange={(v) => onChange({ mobile: v })}
                 placeholder="+1 (555) 987-6543"
                 type="tel"
+              />
+            )}
+            {tpl.showAddress && (
+              <InputField
+                label="Office Address"
+                value={data.address}
+                onChange={(v) => onChange({ address: v })}
+                placeholder="123 Design Street, San Francisco, CA"
               />
             )}
             <InputField
