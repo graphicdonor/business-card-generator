@@ -49,12 +49,14 @@ function BuilderInner({ id }: { id: string }) {
   );
 
   const [exportOpen, setExportOpen] = useState(false);
-  const [cloudSaved, setCloudSaved] = useState(false);
-  const [cloudSaving, setCloudSaving] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [savedSnapshot, setSavedSnapshot] = useState<string>("");
   const [activeSide, setActiveSide] = useState<"front" | "back">("front");
   const [mobileView, setMobileView] = useState<"edit" | "preview">("edit");
   const [loadingCard, setLoadingCard] = useState(!!cardId);
   const loadedRef = useRef(false);
+
+  const hasChanges = JSON.stringify(cardData) !== savedSnapshot;
 
   // Load saved card from Supabase if cardId is in URL
   useEffect(() => {
@@ -68,7 +70,9 @@ function BuilderInner({ id }: { id: string }) {
       .single()
       .then(({ data }) => {
         if (data?.card_data) {
-          setCardData(data.card_data as CardData);
+          const loaded = data.card_data as CardData;
+          setCardData(loaded);
+          setSavedSnapshot(JSON.stringify(loaded));
         }
         setLoadingCard(false);
       });
@@ -76,7 +80,7 @@ function BuilderInner({ id }: { id: string }) {
 
   // Load from localStorage (pending data from old flow)
   useEffect(() => {
-    if (cardId) return; // skip if editing a saved card
+    if (cardId) return;
     const pending = localStorage.getItem("pendingCardData");
     if (pending) {
       localStorage.removeItem("pendingCardData");
@@ -84,7 +88,7 @@ function BuilderInner({ id }: { id: string }) {
         const parsed = JSON.parse(pending);
         setCardData((prev) => ({ ...prev, ...parsed }));
       } catch {
-        // ignore malformed data
+        // ignore
       }
     }
   }, [cardId]);
@@ -95,12 +99,13 @@ function BuilderInner({ id }: { id: string }) {
 
   const handleReset = () => {
     if (template) {
-      setCardData(defaultCardData(template));
+      const fresh = defaultCardData(template);
+      setCardData(fresh);
     }
   };
 
-  const handleCloudSave = async () => {
-    setCloudSaving(true);
+  const handleSave = async () => {
+    setSaving(true);
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
@@ -112,10 +117,8 @@ function BuilderInner({ id }: { id: string }) {
       : `Card ${new Date().toLocaleDateString()}`;
 
     if (cardId) {
-      // Update existing saved card
       await supabase.from("business_cards").update({ card_data: cardData, name: cardName }).eq("id", cardId);
     } else {
-      // Create new saved card
       await supabase.from("business_cards").insert({
         user_id: user.id,
         name: cardName,
@@ -123,9 +126,8 @@ function BuilderInner({ id }: { id: string }) {
         card_data: cardData,
       });
     }
-    setCloudSaving(false);
-    setCloudSaved(true);
-    setTimeout(() => setCloudSaved(false), 3000);
+    setSavedSnapshot(JSON.stringify(cardData));
+    setSaving(false);
   };
 
   if (loadingCard) {
@@ -230,20 +232,25 @@ function BuilderInner({ id }: { id: string }) {
             <RefreshCw size={15} />
           </button>
 
-          {/* Save to account */}
+          {/* Save — active only when unsaved changes exist */}
           <button
-            onClick={handleCloudSave}
-            disabled={cloudSaving}
+            onClick={handleSave}
+            disabled={saving || !hasChanges}
             className={cn(
               "flex items-center gap-1.5 px-2.5 sm:px-3 py-2 text-xs font-semibold rounded-lg border transition-all",
-              cloudSaved
-                ? "bg-emerald-50 text-emerald-600 border-emerald-200"
-                : "bg-white text-slate-600 border-slate-200 hover:border-slate-300"
+              hasChanges && !saving
+                ? "bg-blue-600 hover:bg-blue-700 text-white border-blue-600 shadow-sm shadow-blue-500/20"
+                : "bg-white text-slate-300 border-slate-200 cursor-not-allowed"
             )}
-            title="Save to your account"
+            title={hasChanges ? "Save changes to your account" : "No unsaved changes"}
           >
-            {cloudSaved ? <CheckCircle size={13} /> : <Cloud size={13} />}
-            <span className="hidden sm:inline">{cloudSaved ? "Saved!" : "Save to Account"}</span>
+            {saving
+              ? <div className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+              : hasChanges ? <Cloud size={13} /> : <CheckCircle size={13} />
+            }
+            <span className="hidden sm:inline">
+              {saving ? "Saving..." : hasChanges ? "Save" : "Saved"}
+            </span>
           </button>
 
           {/* Export */}
