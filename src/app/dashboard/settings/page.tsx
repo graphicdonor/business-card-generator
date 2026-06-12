@@ -6,7 +6,7 @@ import { Loader2, Save, User, Lock, CheckCircle } from "lucide-react";
 
 export default function SettingsPage() {
   const [profile, setProfile] = useState({ full_name: "", email: "", company: "" });
-  const [passwords, setPasswords] = useState({ current: "", next: "", confirm: "" });
+  const [passwords, setPasswords] = useState({ next: "", confirm: "" });
   const [loadingProfile, setLoadingProfile] = useState(true);
   const [savingProfile, setSavingProfile] = useState(false);
   const [savingPass, setSavingPass] = useState(false);
@@ -17,7 +17,7 @@ export default function SettingsPage() {
     const load = async () => {
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user) { setLoadingProfile(false); return; }
       const { data } = await supabase.from("profiles").select("full_name, email, company").eq("id", user.id).single();
       if (data) {
         setProfile({
@@ -37,7 +37,7 @@ export default function SettingsPage() {
     setProfileMsg(null);
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    if (!user) { setSavingProfile(false); return; }
     const { error } = await supabase.from("profiles").update({
       full_name: profile.full_name,
       company: profile.company,
@@ -61,7 +61,7 @@ export default function SettingsPage() {
     const supabase = createClient();
     const { error } = await supabase.auth.updateUser({ password: passwords.next });
     setPassMsg(error ? { type: "err", text: error.message } : { type: "ok", text: "Password updated successfully." });
-    if (!error) setPasswords({ current: "", next: "", confirm: "" });
+    if (!error) setPasswords({ next: "", confirm: "" });
     setSavingPass(false);
   };
 

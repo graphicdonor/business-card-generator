@@ -30,3 +30,6 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 *.pdf
+
+# One-time setup scripts (contain credentials)
+scripts/

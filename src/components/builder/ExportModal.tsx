@@ -50,6 +50,7 @@ export default function ExportModal({ isOpen, onClose, data, templateId, templat
   const [selectedFormat, setSelectedFormat] = useState<Format>("png");
   const [exporting, setExporting] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
@@ -60,6 +61,7 @@ export default function ExportModal({ isOpen, onClose, data, templateId, templat
   const handleExport = async () => {
     setExporting(true);
     setSuccess(false);
+    setExportError(null);
     try {
       if (selectedFormat === "png") {
         await exportAsPNG("card-preview-element", filename);
@@ -71,7 +73,7 @@ export default function ExportModal({ isOpen, onClose, data, templateId, templat
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
     } catch (err) {
-      console.error("Export failed:", err);
+      setExportError(err instanceof Error ? err.message : "Export failed. Please try again.");
     } finally {
       setExporting(false);
     }
@@ -182,6 +184,13 @@ export default function ExportModal({ isOpen, onClose, data, templateId, templat
             <span>Sides: <span className="font-medium text-slate-700">{data.isDoubleSided ? "Double" : "Single"}</span></span>
           </div>
         </div>
+
+        {/* Export error */}
+        {exportError && (
+          <div className="mx-6 mb-4 p-3 bg-red-50 border border-red-100 text-red-600 text-xs rounded-xl">
+            {exportError}
+          </div>
+        )}
 
         {/* Actions */}
         <div className="px-6 pb-6 flex gap-3">

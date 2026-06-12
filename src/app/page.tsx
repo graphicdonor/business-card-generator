@@ -383,12 +383,6 @@ export default function HomePage() {
               Browse Templates
               <ArrowRight size={18} />
             </a>
-            <button className="flex items-center gap-2 text-slate-600 hover:text-slate-900 font-medium px-6 py-4 transition-colors">
-              Watch Demo
-              <div className="w-6 h-6 bg-slate-200 rounded-full flex items-center justify-center">
-                <div className="w-0 h-0 border-l-[6px] border-l-slate-600 border-y-[4px] border-y-transparent ml-0.5" />
-              </div>
-            </button>
           </div>
 
           {/* Stats — 2-col on mobile, 4-col on sm+ */}
@@ -554,11 +548,11 @@ export default function HomePage() {
             </div>
             <span className="text-white font-semibold text-sm">CardCraft Pro</span>
           </div>
-          <p className="text-xs text-center">© 2025 CardCraft Pro. Professional Business Card Builder.</p>
+          <p className="text-xs text-center">© 2026 CardCraft Pro. Professional Business Card Builder.</p>
           <div className="flex gap-6 text-xs">
-            <a href="#" className="hover:text-white transition-colors">Privacy</a>
-            <a href="#" className="hover:text-white transition-colors">Terms</a>
-            <a href="#" className="hover:text-white transition-colors">Contact</a>
+            <span>Privacy</span>
+            <span>Terms</span>
+            <span>Contact</span>
           </div>
         </div>
       </footer>

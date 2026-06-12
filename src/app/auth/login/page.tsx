@@ -16,6 +16,24 @@ function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [resetMode, setResetMode] = useState(false);
+  const [resetLoading, setResetLoading] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
+  const [resetError, setResetError] = useState<string | null>(null);
+
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) { setResetError("Enter your email address above first."); return; }
+    setResetLoading(true);
+    setResetError(null);
+    const supabase = createClient();
+    const { error: err } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/auth/callback`,
+    });
+    if (err) setResetError(err.message);
+    else setResetSent(true);
+    setResetLoading(false);
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -82,8 +100,8 @@ function LoginForm() {
             <div>
               <div className="flex items-center justify-between mb-1.5">
                 <label className="block text-sm font-medium text-slate-700">Password</label>
-                <button type="button" className="text-xs text-blue-600 hover:text-blue-800 transition-colors">
-                  Forgot password?
+                <button type="button" onClick={() => { setResetMode(!resetMode); setResetSent(false); setResetError(null); }} className="text-xs text-blue-600 hover:text-blue-800 transition-colors">
+                  {resetMode ? "Cancel" : "Forgot password?"}
                 </button>
               </div>
               <div className="relative">
@@ -106,9 +124,30 @@ function LoginForm() {
               </div>
             </div>
 
+            {resetMode && (
+              <div className="rounded-xl bg-blue-50 border border-blue-100 p-3 space-y-2">
+                {resetSent ? (
+                  <p className="text-sm text-emerald-700 font-medium">Reset link sent — check your inbox.</p>
+                ) : (
+                  <>
+                    <p className="text-xs text-slate-500">Enter the email above, then click Send reset link.</p>
+                    {resetError && <p className="text-xs text-red-600">{resetError}</p>}
+                    <button
+                      type="button"
+                      onClick={handleResetPassword}
+                      disabled={resetLoading}
+                      className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold py-2 rounded-lg text-sm transition-colors"
+                    >
+                      {resetLoading ? <Loader2 size={14} className="animate-spin" /> : null}
+                      {resetLoading ? "Sending..." : "Send reset link"}
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || resetMode}
               className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold py-3 rounded-xl transition-colors shadow-sm shadow-blue-500/20 mt-2"
             >
               {loading ? <Loader2 size={16} className="animate-spin" /> : null}

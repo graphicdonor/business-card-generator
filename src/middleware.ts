@@ -39,6 +39,15 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
+  // Protect admin routes — redirect to login if not authenticated
+  // (actual admin role check is done in the admin layout)
+  if (!user && pathname.startsWith("/admin")) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/auth/login";
+    url.searchParams.set("redirect", pathname);
+    return NextResponse.redirect(url);
+  }
+
   // Redirect authenticated users away from auth pages
   if (
     user &&
@@ -53,5 +62,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/auth/login", "/auth/signup"],
+  matcher: ["/dashboard/:path*", "/admin/:path*", "/auth/login", "/auth/signup"],
 };

@@ -67,6 +67,7 @@ export default function ContactDetailPage() {
   const [editing, setEditing] = useState(false);
   const [editForm, setEditForm] = useState<Partial<Contact>>({});
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [newInteraction, setNewInteraction] = useState({ type: "note" as Interaction["type"], content: "" });
   const [addingNote, setAddingNote] = useState(false);
   const [submittingNote, setSubmittingNote] = useState(false);
@@ -88,15 +89,22 @@ export default function ContactDetailPage() {
     if (!confirm("Delete this contact and all interaction history?")) return;
     setDeleting(true);
     const supabase = createClient();
-    await supabase.from("contacts").delete().eq("id", id);
+    const { error } = await supabase.from("contacts").delete().eq("id", id);
+    if (error) {
+      setDeleting(false);
+      return;
+    }
     router.push("/dashboard/contacts");
   };
 
   const handleSave = async () => {
     setSaving(true);
+    setSaveError(null);
     const supabase = createClient();
     const { error } = await supabase.from("contacts").update(editForm).eq("id", id);
-    if (!error) {
+    if (error) {
+      setSaveError(error.message);
+    } else {
       await load();
       setEditing(false);
     }
@@ -108,7 +116,7 @@ export default function ContactDetailPage() {
     setSubmittingNote(true);
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    if (!user) { setSubmittingNote(false); return; }
     await supabase.from("interactions").insert({
       contact_id: id,
       user_id: user.id,
@@ -175,6 +183,7 @@ export default function ContactDetailPage() {
           <div className="flex items-center gap-2 flex-shrink-0">
             {editing ? (
               <>
+                {saveError && <span className="text-xs text-red-500 max-w-[100px] truncate" title={saveError}>{saveError}</span>}
                 <button
                   onClick={handleSave}
                   disabled={saving}

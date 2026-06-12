@@ -50,6 +50,7 @@ function BuilderInner({ id }: { id: string }) {
 
   const [exportOpen, setExportOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [savedSnapshot, setSavedSnapshot] = useState<string>("");
   const [activeSide, setActiveSide] = useState<"front" | "back">("front");
   const [mobileView, setMobileView] = useState<"edit" | "preview">("edit");
@@ -106,9 +107,11 @@ function BuilderInner({ id }: { id: string }) {
 
   const handleSave = async () => {
     setSaving(true);
+    setSaveError(null);
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
+      setSaving(false);
       window.location.href = `/auth/login?redirect=/builder/${id}${cardId ? `?cardId=${cardId}` : ""}`;
       return;
     }
@@ -116,17 +119,22 @@ function BuilderInner({ id }: { id: string }) {
       ? `${cardData.fullName}${template?.name ? ` — ${template.name}` : ""}`
       : `Card ${new Date().toLocaleDateString()}`;
 
+    let error;
     if (cardId) {
-      await supabase.from("business_cards").update({ card_data: cardData, name: cardName }).eq("id", cardId);
+      ({ error } = await supabase.from("business_cards").update({ card_data: cardData, name: cardName }).eq("id", cardId));
     } else {
-      await supabase.from("business_cards").insert({
+      ({ error } = await supabase.from("business_cards").insert({
         user_id: user.id,
         name: cardName,
         template_id: id,
         card_data: cardData,
-      });
+      }));
     }
-    setSavedSnapshot(JSON.stringify(cardData));
+    if (error) {
+      setSaveError(error.message);
+    } else {
+      setSavedSnapshot(JSON.stringify(cardData));
+    }
     setSaving(false);
   };
 
@@ -232,17 +240,25 @@ function BuilderInner({ id }: { id: string }) {
             <RefreshCw size={15} />
           </button>
 
+          {/* Save error */}
+          {saveError && (
+            <span className="hidden sm:inline text-xs text-red-500 max-w-[120px] truncate" title={saveError}>
+              {saveError}
+            </span>
+          )}
           {/* Save — active only when unsaved changes exist */}
           <button
             onClick={handleSave}
             disabled={saving || !hasChanges}
             className={cn(
               "flex items-center gap-1.5 px-2.5 sm:px-3 py-2 text-xs font-semibold rounded-lg border transition-all",
-              hasChanges && !saving
-                ? "bg-blue-600 hover:bg-blue-700 text-white border-blue-600 shadow-sm shadow-blue-500/20"
-                : "bg-white text-slate-300 border-slate-200 cursor-not-allowed"
+              saveError
+                ? "bg-red-50 text-red-600 border-red-200"
+                : hasChanges && !saving
+                  ? "bg-blue-600 hover:bg-blue-700 text-white border-blue-600 shadow-sm shadow-blue-500/20"
+                  : "bg-white text-slate-300 border-slate-200 cursor-not-allowed"
             )}
-            title={hasChanges ? "Save changes to your account" : "No unsaved changes"}
+            title={saveError ?? (hasChanges ? "Save changes to your account" : "No unsaved changes")}
           >
             {saving
               ? <div className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin" />

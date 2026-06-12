@@ -95,9 +95,11 @@ function LogoUpload({ label, value, onChange, hint, size, onSizeChange }: {
   label: string; value: string | null; onChange: (v: string | null) => void;
   hint?: string; size: number; onSizeChange: (v: number) => void;
 }) {
+  const [fileError, setFileError] = useState<string | null>(null);
   return (
     <div className="space-y-2">
       <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">{label}</span>
+      {fileError && <p className="text-xs text-red-500">{fileError}</p>}
       {value ? (
         <div className="relative group rounded-xl overflow-hidden border border-slate-200 bg-slate-50">
           <img src={value} alt={label} className="w-full h-20 object-contain bg-white"
@@ -120,7 +122,8 @@ function LogoUpload({ label, value, onChange, hint, size, onSizeChange }: {
             onChange={(e) => {
               const file = e.target.files?.[0];
               if (!file) return;
-              if (file.size > 2 * 1024 * 1024) { alert("File too large. Please upload under 2MB."); return; }
+              if (file.size > 2 * 1024 * 1024) { setFileError("File too large — max 2MB."); return; }
+              setFileError(null);
               const reader = new FileReader();
               reader.onload = () => onChange(reader.result as string);
               reader.readAsDataURL(file);
@@ -144,9 +147,11 @@ function LogoUpload({ label, value, onChange, hint, size, onSizeChange }: {
 function ImageUploadField({ label, value, onChange }: {
   label: string; value: string | null; onChange: (v: string | null) => void;
 }) {
+  const [fileError, setFileError] = useState<string | null>(null);
   return (
     <div className="space-y-1.5">
       <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">{label}</span>
+      {fileError && <p className="text-xs text-red-500">{fileError}</p>}
       {value ? (
         <div className="relative group rounded-xl overflow-hidden border border-slate-200 bg-slate-50">
           <img src={value} alt={label} className="w-full h-32 object-contain bg-white" />
@@ -168,7 +173,8 @@ function ImageUploadField({ label, value, onChange }: {
             onChange={(e) => {
               const file = e.target.files?.[0];
               if (!file) return;
-              if (file.size > 10 * 1024 * 1024) { alert("File too large. Please upload under 10MB."); return; }
+              if (file.size > 10 * 1024 * 1024) { setFileError("File too large — max 10MB."); return; }
+              setFileError(null);
               const reader = new FileReader();
               reader.onload = () => onChange(reader.result as string);
               reader.readAsDataURL(file);
@@ -189,6 +195,7 @@ export default function FormPanel({ data, onChange, templateId, side = "front" }
   const [activeTab, setActiveTab] = useState<TabId>("info");
   const [extracting, setExtracting] = useState(false);
   const [extracted, setExtracted] = useState(false);
+  const [extractError, setExtractError] = useState<string | null>(null);
 
   const cfg = templateFormConfig[templateId ?? ""] ?? defaultTemplateFormConfig;
 
@@ -202,7 +209,7 @@ export default function FormPanel({ data, onChange, templateId, side = "front" }
 
   const handleExtract = async () => {
     if (!data.customFrontImage) return;
-    setExtracting(true); setExtracted(false);
+    setExtracting(true); setExtracted(false); setExtractError(null);
     try {
       const res = await fetch("/api/extract-card", {
         method: "POST",
@@ -225,15 +232,14 @@ export default function FormPanel({ data, onChange, templateId, side = "front" }
       onChange(updates);
       setExtracted(true);
     } catch (err) {
-      alert(`Extraction failed: ${err instanceof Error ? err.message : "Unknown error"}`);
+      setExtractError(err instanceof Error ? err.message : "Extraction failed.");
     } finally {
       setExtracting(false);
     }
   };
 
   const handleSwitchTemplate = (newId: string) => {
-    const { customFrontImage, customBackImage, ...rest } = data;
-    void customFrontImage; void customBackImage;
+    const { customFrontImage: _f, customBackImage: _b, ...rest } = data;
     localStorage.setItem("pendingCardData", JSON.stringify(rest));
     router.push(`/builder/${newId}`);
   };
@@ -274,13 +280,16 @@ export default function FormPanel({ data, onChange, templateId, side = "front" }
                 <ImageUploadField label="Back Side (optional)" value={data.customBackImage}
                   onChange={(v) => onChange({ customBackImage: v })} />
                 {data.customFrontImage && (
-                  <button onClick={handleExtract} disabled={extracting}
-                    className={cn("w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold transition-all",
-                      extracting ? "bg-violet-100 text-violet-400 cursor-not-allowed"
-                        : "bg-gradient-to-r from-violet-600 to-blue-600 hover:from-violet-700 hover:to-blue-700 text-white shadow-sm shadow-violet-500/20")}>
-                    {extracting ? <Loader2 size={15} className="animate-spin" /> : <Sparkles size={15} />}
-                    {extracting ? "Extracting text & colors…" : "Extract & Make Editable"}
-                  </button>
+                  <>
+                    {extractError && <p className="text-xs text-red-500 px-1">{extractError}</p>}
+                    <button onClick={handleExtract} disabled={extracting}
+                      className={cn("w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold transition-all",
+                        extracting ? "bg-violet-100 text-violet-400 cursor-not-allowed"
+                          : "bg-gradient-to-r from-violet-600 to-blue-600 hover:from-violet-700 hover:to-blue-700 text-white shadow-sm shadow-violet-500/20")}>
+                      {extracting ? <Loader2 size={15} className="animate-spin" /> : <Sparkles size={15} />}
+                      {extracting ? "Extracting text & colors…" : "Extract & Make Editable"}
+                    </button>
+                  </>
                 )}
                 {extracted && (
                   <div className="space-y-2">

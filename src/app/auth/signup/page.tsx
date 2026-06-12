@@ -26,7 +26,7 @@ export default function SignupPage() {
     setError(null);
 
     const supabase = createClient();
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -41,8 +41,9 @@ export default function SignupPage() {
     } else {
       setSuccess(true);
       setLoading(false);
-      // If email confirmation is disabled in Supabase, redirect immediately
-      setTimeout(() => router.push("/dashboard"), 2000);
+      if (data.session) {
+        setTimeout(() => router.push("/dashboard"), 1500);
+      }
     }
   };
 
@@ -147,9 +148,7 @@ export default function SignupPage() {
           </form>
 
           <p className="text-center text-xs text-slate-400 mt-4">
-            By signing up, you agree to our{" "}
-            <a href="#" className="underline hover:text-slate-600">Terms</a> and{" "}
-            <a href="#" className="underline hover:text-slate-600">Privacy Policy</a>.
+            By signing up, you agree to our Terms and Privacy Policy.
           </p>
         </div>
 
