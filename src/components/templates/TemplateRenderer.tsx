@@ -11,7 +11,6 @@ import RealEstate from "./RealEstate";
 import CreativeVibrant from "./CreativeVibrant";
 import CustomTemplate from "./CustomTemplate";
 import BoldChevron from "./BoldChevron";
-import SplitPanel from "./SplitPanel";
 import RDashPro from "./RDashPro";
 
 interface Props {
@@ -43,8 +42,6 @@ export default function TemplateRenderer({ templateId, data, side = "front", sca
       return <CreativeVibrant {...props} />;
     case "bold-chevron":
       return <BoldChevron {...props} />;
-    case "split-panel":
-      return <SplitPanel {...props} />;
     case "rdash-pro":
       return <RDashPro {...props} />;
     case "custom-upload":

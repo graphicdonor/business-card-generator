@@ -146,22 +146,6 @@ export const templates: Template[] = [
     defaultFont: "Inter",
   },
   {
-    id: "split-panel",
-    name: "Split Panel",
-    category: "Corporate",
-    description: "Bold split-panel design with colored name on white left panel and dark right panel with logo and QR.",
-    isPremium: false,
-    isDoubleSided: true,
-    tags: ["corporate", "split", "modern", "dark"],
-    previewBg: "from-red-500 to-slate-800",
-    defaultColors: {
-      primary: "#E63929",
-      secondary: "#2D3650",
-      accent: "#E63929",
-    },
-    defaultFont: "Inter",
-  },
-  {
     id: "rdash-pro",
     name: "RDash Pro",
     category: "Corporate",
