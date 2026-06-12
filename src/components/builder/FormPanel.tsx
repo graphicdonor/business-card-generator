@@ -492,7 +492,7 @@ export default function FormPanel({ data, onChange, templateId }: Props) {
             {templateId !== "custom-upload" && (
               <Section title="Logo">
                 {tpl.showBackLogo ? (
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-4">
                     <LogoUpload
                       label="Front Logo"
                       value={data.logoUrlFront}
