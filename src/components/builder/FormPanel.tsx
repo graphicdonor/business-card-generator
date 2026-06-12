@@ -563,6 +563,15 @@ export default function FormPanel({ data, onChange, templateId, side = "front" }
               <>
                 <div>
                   <InputField
+                    label="Company Name"
+                    value={data.company}
+                    onChange={(v) => onChange({ company: v })}
+                    placeholder="Acme Inc."
+                  />
+                  <FontSizeInline value={data.fontSizeCompany ?? 100} onChange={(v) => onChange({ fontSizeCompany: v })} />
+                </div>
+                <div>
+                  <InputField
                     label="Phone"
                     value={data.phone}
                     onChange={(v) => onChange({ phone: v })}
