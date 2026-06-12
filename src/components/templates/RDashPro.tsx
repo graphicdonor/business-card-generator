@@ -152,9 +152,9 @@ export default function RDashPro({ data, side = "front", scale = 1 }: Props) {
   const hasPhone   = !!(data.phone || data.mobile);
   const hasEmail   = !!data.email;
 
-  // phone icon = 40px tall; address icon = 40px tall — spacing accounts for new sizes
-  const phoneY = hasAddress ? addrTopY - 86 : CONTACT_BOTTOM - 20;
-  const emailY = hasPhone   ? phoneY - 43  : (hasAddress ? addrTopY - 66 : CONTACT_BOTTOM - 20);
+  // phone icon = 40px tall; address icon = 31px tall (scale 3.4) — spacing accounts for sizes
+  const phoneY = hasAddress ? addrTopY - 77 : CONTACT_BOTTOM - 20;
+  const emailY = hasPhone   ? phoneY - 43  : (hasAddress ? addrTopY - 57 : CONTACT_BOTTOM - 20);
 
   // Right-panel logo area (scaled from center)
   const logoAreaBaseW = RIGHT_W - 40; // 302
@@ -248,10 +248,10 @@ export default function RDashPro({ data, side = "front", scale = 1 }: Props) {
           </g>
         )}
 
-        {/* ── Address – viewBox 6.1×9.06 → 40×40 box (scale 4.42, centered horiz.) ── */}
+        {/* ── Address – viewBox 6.1×9.06, scale 3.4 → 20.7×31px, centered in 40px row ── */}
         {hasAddress && (
-          <g transform={`translate(60, ${addrTopY - 40})`}>
-            <g transform="translate(7, 0) scale(4.42)">
+          <g transform={`translate(60, ${addrTopY - 31})`}>
+            <g transform="translate(10, 0) scale(3.4)">
               <path
                 d="M4.25,25.89a3.039,3.039,0,0,1,3.04,3.04c0,1.23-.96,2.48-1.89,3.68-.14.18-.27.35-.44.58a1.047,1.047,0,0,1-.32.27.893.893,0,0,1-1.12-.27c-.17-.23-.31-.4-.44-.58-.92-1.2-1.89-2.45-1.89-3.68a3.039,3.039,0,0,1,3.04-3.04Zm1.72,7a.276.276,0,0,1,.29-.47,1.633,1.633,0,0,1,.49.44,1.029,1.029,0,0,1,.19.58,1.344,1.344,0,0,1-.86,1.12,4.208,4.208,0,0,1-1.84.39,4.208,4.208,0,0,1-1.84-.39,1.344,1.344,0,0,1-.86-1.12,1.029,1.029,0,0,1,.19-.58,1.5,1.5,0,0,1,.49-.44.276.276,0,0,1,.29.47,1.2,1.2,0,0,0-.33.29.432.432,0,0,0-.09.26c0,.23.21.45.56.62a3.644,3.644,0,0,0,1.59.33,3.676,3.676,0,0,0,1.59-.33c.34-.18.56-.4.56-.62a.454.454,0,0,0-.09-.26A1.2,1.2,0,0,0,5.97,32.89ZM4.25,27.44a1.5,1.5,0,1,1-1.05.44,1.482,1.482,0,0,1,1.05-.44m.66.83a.942.942,0,1,0,.27.66.921.921,0,0,0-.27-.66m1.1-1.1a2.49,2.49,0,0,0-4.25,1.76c0,1.04.9,2.22,1.77,3.35.16.21.33.43.45.59a.294.294,0,0,0,.12.1.39.39,0,0,0,.3,0,.53.53,0,0,0,.12-.1c.12-.16.28-.37.45-.59.87-1.13,1.77-2.3,1.77-3.35A2.478,2.478,0,0,0,6.01,27.17Z"
                 transform="translate(-1.19 -25.89)"
@@ -262,7 +262,7 @@ export default function RDashPro({ data, side = "front", scale = 1 }: Props) {
               <text
                 key={i}
                 x={46}
-                y={i * LINE_H + 40}
+                y={i * LINE_H + 31}
                 fill={navy}
                 fontSize={17 * aScale}
                 fontFamily={font}
