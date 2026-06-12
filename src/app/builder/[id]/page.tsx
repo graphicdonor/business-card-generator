@@ -22,6 +22,7 @@ import {
   SlidersHorizontal,
   Cloud,
   CheckCircle,
+  LayoutDashboard,
 } from "lucide-react";
 
 interface Props {
@@ -276,6 +277,16 @@ function BuilderInner({ id }: { id: string }) {
             <Download size={14} />
             <span>Export</span>
           </button>
+
+          {/* Dashboard */}
+          <Link
+            href="/dashboard"
+            className="flex items-center gap-1.5 px-2.5 sm:px-3 py-2 text-xs font-semibold rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:border-slate-300 transition-all"
+            title="Go to Dashboard"
+          >
+            <LayoutDashboard size={14} />
+            <span className="hidden sm:inline">Dashboard</span>
+          </Link>
         </div>
       </header>
 
