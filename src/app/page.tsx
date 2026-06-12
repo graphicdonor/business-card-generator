@@ -225,15 +225,15 @@ export default function HomePage() {
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3">
-            <button className="hidden sm:block text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors px-4 py-2">
+            <Link href="/auth/login" className="hidden sm:block text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors px-4 py-2">
               Sign In
-            </button>
-            <a
-              href="#templates"
+            </Link>
+            <Link
+              href="/auth/signup"
               className="text-xs sm:text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-colors px-3 sm:px-4 py-2 rounded-lg shadow-sm shadow-blue-500/20"
             >
               Get Started
-            </a>
+            </Link>
             {/* Hamburger */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -262,10 +262,21 @@ export default function HomePage() {
                 {item.label}
               </a>
             ))}
-            <div className="pt-2 border-t border-slate-100">
-              <button className="w-full text-left px-3 py-2.5 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition-colors">
+            <div className="pt-2 border-t border-slate-100 space-y-1">
+              <Link
+                href="/auth/login"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block px-3 py-2.5 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition-colors"
+              >
                 Sign In
-              </button>
+              </Link>
+              <Link
+                href="/dashboard"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block px-3 py-2.5 text-sm font-semibold text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+              >
+                Dashboard
+              </Link>
             </div>
           </div>
         )}

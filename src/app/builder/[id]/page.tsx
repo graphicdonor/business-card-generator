@@ -8,6 +8,7 @@ import FormPanel from "@/components/builder/FormPanel";
 import CardPreview from "@/components/builder/CardPreview";
 import ExportModal from "@/components/builder/ExportModal";
 import { cn } from "@/lib/utils";
+import { createClient } from "@/lib/supabase/client";
 import {
   ArrowLeft,
   Download,
@@ -17,6 +18,8 @@ import {
   RefreshCw,
   Eye,
   SlidersHorizontal,
+  Cloud,
+  CheckCircle,
 } from "lucide-react";
 
 interface Props {
@@ -44,6 +47,8 @@ export default function BuilderPage({ params }: Props) {
 
   const [exportOpen, setExportOpen] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [cloudSaved, setCloudSaved] = useState(false);
+  const [cloudSaving, setCloudSaving] = useState(false);
   const [activeSide, setActiveSide] = useState<"front" | "back">("front");
   const [mobileView, setMobileView] = useState<"edit" | "preview">("edit");
 
@@ -75,6 +80,28 @@ export default function BuilderPage({ params }: Props) {
     localStorage.setItem(key, JSON.stringify(cardData));
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
+  };
+
+  const handleCloudSave = async () => {
+    setCloudSaving(true);
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      window.location.href = `/auth/login?redirect=/builder/${id}`;
+      return;
+    }
+    const cardName = cardData.fullName
+      ? `${cardData.fullName}${template?.name ? ` — ${template.name}` : ""}`
+      : `Card ${new Date().toLocaleDateString()}`;
+    await supabase.from("business_cards").insert({
+      user_id: user.id,
+      name: cardName,
+      template_id: id,
+      card_data: cardData,
+    });
+    setCloudSaving(false);
+    setCloudSaved(true);
+    setTimeout(() => setCloudSaved(false), 3000);
   };
 
   if (!template) {
@@ -180,6 +207,22 @@ export default function BuilderPage({ params }: Props) {
           >
             <Save size={14} />
             <span className="hidden sm:inline">{saved ? "Saved!" : "Save"}</span>
+          </button>
+
+          {/* Save to account */}
+          <button
+            onClick={handleCloudSave}
+            disabled={cloudSaving}
+            className={cn(
+              "hidden sm:flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-lg border transition-all",
+              cloudSaved
+                ? "bg-emerald-50 text-emerald-600 border-emerald-200"
+                : "bg-white text-slate-600 border-slate-200 hover:border-slate-300"
+            )}
+            title="Save to your account"
+          >
+            {cloudSaved ? <CheckCircle size={13} /> : <Cloud size={13} />}
+            {cloudSaved ? "Saved!" : "Save to Account"}
           </button>
 
           {/* Export */}
