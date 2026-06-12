@@ -7,6 +7,7 @@ import { templates } from "@/lib/templates";
 import { cn } from "@/lib/utils";
 import { preloadCommonFonts } from "@/lib/googleFonts";
 import FontPicker from "./FontPicker";
+import { templateFormConfig, defaultTemplateFormConfig, socialFieldMeta } from "@/lib/templateFormConfig";
 import {
   User,
   Phone,
@@ -32,83 +33,24 @@ interface Props {
 type TabId = "info" | "contact" | "social" | "branding" | "qr";
 
 const tabs: { id: TabId; label: string; icon: React.ReactNode }[] = [
-  { id: "info", label: "Personal", icon: <User size={15} /> },
-  { id: "contact", label: "Contact", icon: <Phone size={15} /> },
-  { id: "social", label: "Social", icon: <Share2 size={15} /> },
-  { id: "branding", label: "Brand", icon: <Palette size={15} /> },
-  { id: "qr", label: "QR Code", icon: <QrCode size={15} /> },
+  { id: "info",     label: "Personal", icon: <User size={15} />    },
+  { id: "contact",  label: "Contact",  icon: <Phone size={15} />   },
+  { id: "social",   label: "Social",   icon: <Share2 size={15} />  },
+  { id: "branding", label: "Brand",    icon: <Palette size={15} /> },
+  { id: "qr",       label: "QR Code",  icon: <QrCode size={15} />  },
 ];
 
-// Per-template field configuration
-type SocialField = "linkedin" | "instagram" | "facebook" | "twitter" | "youtube";
-type TemplateFieldConfig = {
-  showAddress: boolean;
-  showMobile: boolean;
-  socialFields: SocialField[];
-  showQR: boolean;
-  showBackLogo: boolean;
-};
+// ── Reusable sub-components ────────────────────────────────────────────────
 
-const templateFieldConfig: Record<string, TemplateFieldConfig> = {
-  "corporate-blue":  { showAddress: true,  showMobile: true,  socialFields: ["linkedin"],                                          showQR: true,  showBackLogo: true  },
-  "minimal-white":   { showAddress: false, showMobile: false, socialFields: [],                                                    showQR: false, showBackLogo: true  },
-  "dark-luxury":     { showAddress: false, showMobile: false, socialFields: [],                                                    showQR: false, showBackLogo: true  },
-  "tech-modern":     { showAddress: false, showMobile: false, socialFields: ["linkedin"],                                          showQR: true,  showBackLogo: true  },
-  "finance-gold":    { showAddress: true,  showMobile: false, socialFields: ["linkedin"],                                          showQR: true,  showBackLogo: true  },
-  "medical-clean":   { showAddress: true,  showMobile: true,  socialFields: [],                                                    showQR: true,  showBackLogo: true  },
-  "real-estate":     { showAddress: true,  showMobile: false, socialFields: [],                                                    showQR: true,  showBackLogo: true  },
-  "creative-color":  { showAddress: false, showMobile: false, socialFields: ["instagram"],                                         showQR: true,  showBackLogo: true  },
-  "bold-chevron":    { showAddress: true,  showMobile: false, socialFields: [],                                                    showQR: true,  showBackLogo: true  },
-  "split-panel":     { showAddress: true,  showMobile: false, socialFields: [],                                                    showQR: true,  showBackLogo: false },
-  "rdash-pro":       { showAddress: true,  showMobile: true,  socialFields: [],                                                    showQR: true,  showBackLogo: true  },
-  "custom-upload":   { showAddress: true,  showMobile: true,  socialFields: ["linkedin","instagram","facebook","twitter","youtube"], showQR: true,  showBackLogo: false },
-};
-
-const defaultConfig: TemplateFieldConfig = {
-  showAddress: true, showMobile: true,
-  socialFields: ["linkedin", "instagram", "facebook", "twitter", "youtube"],
-  showQR: true, showBackLogo: true,
-};
-
-const socialFieldMeta: Record<SocialField, { label: string; placeholder: string }> = {
-  linkedin:  { label: "LinkedIn",    placeholder: "linkedin.com/in/yourname" },
-  instagram: { label: "Instagram",   placeholder: "@yourhandle"              },
-  twitter:   { label: "Twitter / X", placeholder: "@yourhandle"              },
-  facebook:  { label: "Facebook",    placeholder: "facebook.com/yourpage"    },
-  youtube:   { label: "YouTube",     placeholder: "youtube.com/@yourchannel" },
-};
-
-const colorPresets = [
-  { name: "Corporate Blue", primary: "#2563EB", secondary: "#1E3A8A", accent: "#60A5FA" },
-  { name: "Luxury Gold",    primary: "#D4AF37", secondary: "#1A1A2E", accent: "#C9A227" },
-  { name: "Startup Purple", primary: "#8B5CF6", secondary: "#0F172A", accent: "#06B6D4" },
-  { name: "Fashion Pink",   primary: "#EC4899", secondary: "#7C3AED", accent: "#F59E0B" },
-  { name: "Dark Mode",      primary: "#64748B", secondary: "#0F172A", accent: "#94A3B8" },
-  { name: "Forest Green",   primary: "#059669", secondary: "#064E3B", accent: "#34D399" },
-];
-
-function InputField({
-  label,
-  value,
-  onChange,
-  placeholder,
-  type = "text",
-}: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  placeholder?: string;
-  type?: string;
+function InputField({ label, value, onChange, placeholder, type = "text" }: {
+  label: string; value: string; onChange: (v: string) => void;
+  placeholder?: string; type?: string;
 }) {
   return (
     <div className="space-y-1.5">
-      <label className="text-xs font-medium text-slate-500 uppercase tracking-wider">
-        {label}
-      </label>
+      <label className="text-xs font-medium text-slate-500 uppercase tracking-wider">{label}</label>
       <input
-        type={type}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
+        type={type} value={value} onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all"
       />
@@ -120,48 +62,28 @@ function FontSizeInline({ value = 100, onChange }: { value?: number; onChange: (
   return (
     <div className="flex items-center gap-1.5 pt-1">
       <span className="text-[9px] text-slate-400 font-medium uppercase tracking-wider">Size</span>
-      <button
-        type="button"
-        onClick={() => onChange(Math.max(50, value - 5))}
-        className="w-4 h-4 flex items-center justify-center text-slate-400 hover:text-slate-700 border border-slate-200 hover:border-slate-300 rounded text-[10px] leading-none transition-colors"
-      >−</button>
+      <button type="button" onClick={() => onChange(Math.max(50, value - 5))}
+        className="w-4 h-4 flex items-center justify-center text-slate-400 hover:text-slate-700 border border-slate-200 hover:border-slate-300 rounded text-[10px] leading-none transition-colors">−</button>
       <span className="text-[10px] font-mono text-slate-500 w-7 text-center tabular-nums">{value}%</span>
-      <button
-        type="button"
-        onClick={() => onChange(Math.min(200, value + 5))}
-        className="w-4 h-4 flex items-center justify-center text-slate-400 hover:text-slate-700 border border-slate-200 hover:border-slate-300 rounded text-[10px] leading-none transition-colors"
-      >+</button>
+      <button type="button" onClick={() => onChange(Math.min(200, value + 5))}
+        className="w-4 h-4 flex items-center justify-center text-slate-400 hover:text-slate-700 border border-slate-200 hover:border-slate-300 rounded text-[10px] leading-none transition-colors">+</button>
       {value !== 100 && (
-        <button
-          type="button"
-          onClick={() => onChange(100)}
-          className="text-[9px] text-blue-400 hover:text-blue-600 transition-colors"
-          title="Reset to 100%"
-        >↺</button>
+        <button type="button" onClick={() => onChange(100)}
+          className="text-[9px] text-blue-400 hover:text-blue-600 transition-colors" title="Reset to 100%">↺</button>
       )}
     </div>
   );
 }
 
-function Section({
-  title,
-  children,
-  defaultOpen = true,
-}: {
-  title: string;
-  children: React.ReactNode;
-  defaultOpen?: boolean;
+function Section({ title, children, defaultOpen = true }: {
+  title: string; children: React.ReactNode; defaultOpen?: boolean;
 }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
     <div className="border border-slate-100 rounded-xl overflow-hidden">
-      <button
-        onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between px-4 py-3 bg-slate-50 hover:bg-slate-100 transition-colors"
-      >
-        <span className="text-xs font-semibold text-slate-600 uppercase tracking-wider">
-          {title}
-        </span>
+      <button onClick={() => setOpen(!open)}
+        className="w-full flex items-center justify-between px-4 py-3 bg-slate-50 hover:bg-slate-100 transition-colors">
+        <span className="text-xs font-semibold text-slate-600 uppercase tracking-wider">{title}</span>
         {open ? <ChevronUp size={14} className="text-slate-400" /> : <ChevronDown size={14} className="text-slate-400" />}
       </button>
       {open && <div className="p-4 space-y-4">{children}</div>}
@@ -169,31 +91,19 @@ function Section({
   );
 }
 
-function LogoUpload({
-  label,
-  value,
-  onChange,
-  hint,
-  size,
-  onSizeChange,
-}: {
-  label: string;
-  value: string | null;
-  onChange: (v: string | null) => void;
-  hint?: string;
-  size: number;
-  onSizeChange: (v: number) => void;
+function LogoUpload({ label, value, onChange, hint, size, onSizeChange }: {
+  label: string; value: string | null; onChange: (v: string | null) => void;
+  hint?: string; size: number; onSizeChange: (v: number) => void;
 }) {
   return (
     <div className="space-y-2">
       <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">{label}</span>
       {value ? (
         <div className="relative group rounded-xl overflow-hidden border border-slate-200 bg-slate-50">
-          <img src={value} alt={label} className="w-full h-20 object-contain bg-white" style={{ transform: `scale(${size / 100})`, transformOrigin: "center" }} />
-          <button
-            onClick={() => onChange(null)}
-            className="absolute top-2 right-2 p-1.5 bg-white/90 hover:bg-red-50 text-slate-400 hover:text-red-500 rounded-lg border border-slate-200 transition-all shadow-sm"
-          >
+          <img src={value} alt={label} className="w-full h-20 object-contain bg-white"
+            style={{ transform: `scale(${size / 100})`, transformOrigin: "center" }} />
+          <button onClick={() => onChange(null)}
+            className="absolute top-2 right-2 p-1.5 bg-white/90 hover:bg-red-50 text-slate-400 hover:text-red-500 rounded-lg border border-slate-200 transition-all shadow-sm">
             <X size={13} />
           </button>
         </div>
@@ -206,58 +116,33 @@ function LogoUpload({
             <p className="text-xs font-medium text-slate-600 group-hover:text-blue-600">Upload {label}</p>
             <p className="text-[10px] text-slate-400">{hint ?? "PNG, SVG, max 2MB"}</p>
           </div>
-          <input
-            type="file"
-            accept=".png,.svg,.jpg,.jpeg,.webp,image/*"
-            className="hidden"
+          <input type="file" accept=".png,.svg,.jpg,.jpeg,.webp,image/*" className="hidden"
             onChange={(e) => {
               const file = e.target.files?.[0];
               if (!file) return;
-              if (file.size > 2 * 1024 * 1024) {
-                alert("File too large. Please upload under 2MB.");
-                return;
-              }
+              if (file.size > 2 * 1024 * 1024) { alert("File too large. Please upload under 2MB."); return; }
               const reader = new FileReader();
               reader.onload = () => onChange(reader.result as string);
               reader.readAsDataURL(file);
               e.target.value = "";
-            }}
-          />
+            }} />
         </label>
       )}
-      {/* Size slider — always visible so user knows they can adjust */}
       <div className="flex items-center gap-2 px-0.5">
         <span className="text-[10px] text-slate-400 w-16 flex-shrink-0">Size {size}%</span>
-        <input
-          type="range"
-          min={30}
-          max={200}
-          step={5}
-          value={size}
+        <input type="range" min={30} max={200} step={5} value={size}
           onChange={(e) => onSizeChange(Number(e.target.value))}
-          className="flex-1 h-1 bg-slate-200 rounded-full appearance-none cursor-pointer accent-blue-500"
-        />
+          className="flex-1 h-1 bg-slate-200 rounded-full appearance-none cursor-pointer accent-blue-500" />
         {size !== 100 && (
-          <button
-            onClick={() => onSizeChange(100)}
-            className="text-[10px] text-blue-400 hover:text-blue-600 flex-shrink-0 transition-colors"
-          >
-            Reset
-          </button>
+          <button onClick={() => onSizeChange(100)} className="text-[10px] text-blue-400 hover:text-blue-600 flex-shrink-0 transition-colors">Reset</button>
         )}
       </div>
     </div>
   );
 }
 
-function ImageUploadField({
-  label,
-  value,
-  onChange,
-}: {
-  label: string;
-  value: string | null;
-  onChange: (v: string | null) => void;
+function ImageUploadField({ label, value, onChange }: {
+  label: string; value: string | null; onChange: (v: string | null) => void;
 }) {
   return (
     <div className="space-y-1.5">
@@ -265,10 +150,8 @@ function ImageUploadField({
       {value ? (
         <div className="relative group rounded-xl overflow-hidden border border-slate-200 bg-slate-50">
           <img src={value} alt={label} className="w-full h-32 object-contain bg-white" />
-          <button
-            onClick={() => onChange(null)}
-            className="absolute top-2 right-2 p-1.5 bg-white/90 hover:bg-red-50 text-slate-400 hover:text-red-500 rounded-lg border border-slate-200 transition-all shadow-sm"
-          >
+          <button onClick={() => onChange(null)}
+            className="absolute top-2 right-2 p-1.5 bg-white/90 hover:bg-red-50 text-slate-400 hover:text-red-500 rounded-lg border border-slate-200 transition-all shadow-sm">
             <X size={14} />
           </button>
         </div>
@@ -281,23 +164,16 @@ function ImageUploadField({
             <p className="text-xs font-medium text-slate-600 group-hover:text-blue-600">Upload image</p>
             <p className="text-[10px] text-slate-400 mt-0.5">PNG, JPG, WEBP, SVG</p>
           </div>
-          <input
-            type="file"
-            accept="image/*"
-            className="hidden"
+          <input type="file" accept="image/*" className="hidden"
             onChange={(e) => {
               const file = e.target.files?.[0];
               if (!file) return;
-              if (file.size > 10 * 1024 * 1024) {
-                alert("File too large. Please upload under 10MB.");
-                return;
-              }
+              if (file.size > 10 * 1024 * 1024) { alert("File too large. Please upload under 10MB."); return; }
               const reader = new FileReader();
               reader.onload = () => onChange(reader.result as string);
               reader.readAsDataURL(file);
               e.target.value = "";
-            }}
-          />
+            }} />
         </label>
       )}
     </div>
@@ -306,33 +182,27 @@ function ImageUploadField({
 
 const pickerTemplates = templates.filter((t) => t.id !== "custom-upload");
 
+// ── Main component ─────────────────────────────────────────────────────────
+
 export default function FormPanel({ data, onChange, templateId, side = "front" }: Props) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<TabId>("info");
   const [extracting, setExtracting] = useState(false);
   const [extracted, setExtracted] = useState(false);
 
-  const tpl = templateFieldConfig[templateId ?? ""] ?? defaultConfig;
+  const cfg = templateFormConfig[templateId ?? ""] ?? defaultTemplateFormConfig;
+
+  useEffect(() => { preloadCommonFonts(); }, []);
 
   useEffect(() => {
-    preloadCommonFonts();
-  }, []);
-
-  // Auto-switch away from tabs that are hidden on back side
-  useEffect(() => {
-    if (side === "back" && (activeTab === "social" || activeTab === "qr")) {
-      setActiveTab("info");
-    }
+    if (side === "back" && (activeTab === "social" || activeTab === "qr")) setActiveTab("info");
   }, [side]);
 
-  const visibleTabs = tabs.filter(
-    (tab) => side !== "back" || (tab.id !== "social" && tab.id !== "qr")
-  );
+  const visibleTabs = tabs.filter((tab) => side !== "back" || (tab.id !== "social" && tab.id !== "qr"));
 
   const handleExtract = async () => {
     if (!data.customFrontImage) return;
-    setExtracting(true);
-    setExtracted(false);
+    setExtracting(true); setExtracted(false);
     try {
       const res = await fetch("/api/extract-card", {
         method: "POST",
@@ -343,53 +213,45 @@ export default function FormPanel({ data, onChange, templateId, side = "front" }
         const err = await res.json().catch(() => ({}));
         throw new Error((err as { error?: string }).error ?? "Extraction failed");
       }
-      const extracted = await res.json();
+      const result = await res.json();
       const updates: Partial<CardData> = {};
-      const fields = [
-        "fullName", "designation", "company", "phone", "mobile",
-        "email", "website", "address", "linkedin", "instagram",
-        "twitter", "logoText",
-      ] as const;
+      const fields = ["fullName","designation","company","phone","mobile","email","website","address","linkedin","instagram","twitter","logoText"] as const;
       for (const field of fields) {
-        if ((extracted as Record<string, string>)[field]) updates[field] = (extracted as Record<string, string>)[field];
+        if ((result as Record<string, string>)[field]) updates[field] = (result as Record<string, string>)[field];
       }
-      if ((extracted as { primaryColor?: string }).primaryColor?.startsWith("#")) updates.primaryColor = (extracted as { primaryColor: string }).primaryColor;
-      if ((extracted as { secondaryColor?: string }).secondaryColor?.startsWith("#")) updates.secondaryColor = (extracted as { secondaryColor: string }).secondaryColor;
-      if ((extracted as { accentColor?: string }).accentColor?.startsWith("#")) updates.accentColor = (extracted as { accentColor: string }).accentColor;
+      if ((result as { primaryColor?: string }).primaryColor?.startsWith("#")) updates.primaryColor = (result as { primaryColor: string }).primaryColor;
+      if ((result as { secondaryColor?: string }).secondaryColor?.startsWith("#")) updates.secondaryColor = (result as { secondaryColor: string }).secondaryColor;
+      if ((result as { accentColor?: string }).accentColor?.startsWith("#")) updates.accentColor = (result as { accentColor: string }).accentColor;
       onChange(updates);
       setExtracted(true);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Unknown error";
-      alert(`Extraction failed: ${msg}`);
+      alert(`Extraction failed: ${err instanceof Error ? err.message : "Unknown error"}`);
     } finally {
       setExtracting(false);
     }
   };
 
-  const handleSwitchTemplate = (newTemplateId: string) => {
+  const handleSwitchTemplate = (newId: string) => {
     const { customFrontImage, customBackImage, ...rest } = data;
     void customFrontImage; void customBackImage;
     localStorage.setItem("pendingCardData", JSON.stringify(rest));
-    router.push(`/builder/${newTemplateId}`);
+    router.push(`/builder/${newId}`);
   };
 
   return (
     <div className="h-full flex flex-col bg-white">
+
       {/* Tab Bar */}
       <div className="flex border-b border-slate-100 px-2 pt-2 gap-1 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
         {visibleTabs.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
+          <button key={tab.id} onClick={() => setActiveTab(tab.id)}
             className={cn(
               "flex items-center gap-1 px-2.5 py-2 text-xs font-medium rounded-t-lg transition-all flex-shrink-0 whitespace-nowrap",
               activeTab === tab.id
                 ? "bg-blue-50 text-blue-600 border-b-2 border-blue-500"
                 : "text-slate-500 hover:text-slate-700 hover:bg-slate-50"
-            )}
-          >
-            {tab.icon}
-            {tab.label}
+            )}>
+            {tab.icon}{tab.label}
           </button>
         ))}
       </div>
@@ -397,7 +259,7 @@ export default function FormPanel({ data, onChange, templateId, side = "front" }
       {/* Tab Content */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
 
-        {/* ── PERSONAL INFO TAB ── */}
+        {/* ── PERSONAL TAB ── */}
         {activeTab === "info" && (
           <>
             {/* Custom upload section */}
@@ -405,56 +267,33 @@ export default function FormPanel({ data, onChange, templateId, side = "front" }
               <Section title="Card Design Images">
                 <div className="p-3 bg-blue-50 border border-blue-100 rounded-xl mb-1">
                   <p className="text-xs text-blue-700 font-medium">Upload your card design</p>
-                  <p className="text-[10px] text-blue-500 mt-0.5">
-                    Upload front and back images, then extract text and colors to make it editable.
-                  </p>
+                  <p className="text-[10px] text-blue-500 mt-0.5">Upload front and back images, then extract text and colors to make it editable.</p>
                 </div>
-                <ImageUploadField
-                  label="Front Side"
-                  value={data.customFrontImage}
-                  onChange={(v) => { onChange({ customFrontImage: v }); setExtracted(false); }}
-                />
-                <ImageUploadField
-                  label="Back Side (optional)"
-                  value={data.customBackImage}
-                  onChange={(v) => onChange({ customBackImage: v })}
-                />
-
+                <ImageUploadField label="Front Side" value={data.customFrontImage}
+                  onChange={(v) => { onChange({ customFrontImage: v }); setExtracted(false); }} />
+                <ImageUploadField label="Back Side (optional)" value={data.customBackImage}
+                  onChange={(v) => onChange({ customBackImage: v })} />
                 {data.customFrontImage && (
-                  <button
-                    onClick={handleExtract}
-                    disabled={extracting}
-                    className={cn(
-                      "w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold transition-all",
-                      extracting
-                        ? "bg-violet-100 text-violet-400 cursor-not-allowed"
-                        : "bg-gradient-to-r from-violet-600 to-blue-600 hover:from-violet-700 hover:to-blue-700 text-white shadow-sm shadow-violet-500/20"
-                    )}
-                  >
+                  <button onClick={handleExtract} disabled={extracting}
+                    className={cn("w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold transition-all",
+                      extracting ? "bg-violet-100 text-violet-400 cursor-not-allowed"
+                        : "bg-gradient-to-r from-violet-600 to-blue-600 hover:from-violet-700 hover:to-blue-700 text-white shadow-sm shadow-violet-500/20")}>
                     {extracting ? <Loader2 size={15} className="animate-spin" /> : <Sparkles size={15} />}
                     {extracting ? "Extracting text & colors…" : "Extract & Make Editable"}
                   </button>
                 )}
-
                 {extracted && (
                   <div className="space-y-2">
                     <div className="flex items-center gap-1.5 px-1">
                       <LayoutTemplate size={12} className="text-violet-500" />
-                      <span className="text-[10px] font-semibold text-violet-600 uppercase tracking-wider">
-                        Apply extracted data to a template
-                      </span>
+                      <span className="text-[10px] font-semibold text-violet-600 uppercase tracking-wider">Apply to a template</span>
                     </div>
                     <div className="grid grid-cols-2 gap-1.5">
                       {pickerTemplates.map((t) => (
-                        <button
-                          key={t.id}
-                          onClick={() => handleSwitchTemplate(t.id)}
-                          className="flex items-center gap-1.5 px-2.5 py-2 text-xs font-medium rounded-lg border border-slate-200 hover:border-violet-300 hover:bg-violet-50 text-slate-600 hover:text-violet-700 transition-all text-left"
-                        >
-                          <div
-                            className="w-3 h-3 rounded-full flex-shrink-0"
-                            style={{ background: `linear-gradient(135deg, ${t.defaultColors.primary}, ${t.defaultColors.secondary})` }}
-                          />
+                        <button key={t.id} onClick={() => handleSwitchTemplate(t.id)}
+                          className="flex items-center gap-1.5 px-2.5 py-2 text-xs font-medium rounded-lg border border-slate-200 hover:border-violet-300 hover:bg-violet-50 text-slate-600 hover:text-violet-700 transition-all text-left">
+                          <div className="w-3 h-3 rounded-full flex-shrink-0"
+                            style={{ background: `linear-gradient(135deg, ${t.defaultColors.primary}, ${t.defaultColors.secondary})` }} />
                           <span className="truncate">{t.name}</span>
                         </button>
                       ))}
@@ -464,175 +303,118 @@ export default function FormPanel({ data, onChange, templateId, side = "front" }
               </Section>
             )}
 
-            <Section title={side === "back" ? "Back Side" : "Personal Info"}>
-              {/* Front-side fields: Name, Designation, Slogan */}
+            <Section title={side === "back" ? "Back Side" : cfg.sectionLabel}>
               {side !== "back" && (
                 <>
                   <div>
-                    <InputField
-                      label="Full Name"
-                      value={data.fullName}
-                      onChange={(v) => onChange({ fullName: v })}
-                      placeholder="Alex Johnson"
-                    />
+                    <InputField label="Full Name" value={data.fullName}
+                      onChange={(v) => onChange({ fullName: v })} placeholder="Alex Johnson" />
                     <FontSizeInline value={data.fontSizeName ?? 100} onChange={(v) => onChange({ fontSizeName: v })} />
                   </div>
                   <div>
-                    <InputField
-                      label="Designation / Title"
-                      value={data.designation}
-                      onChange={(v) => onChange({ designation: v })}
-                      placeholder="Senior Product Designer"
-                    />
+                    <InputField label="Designation / Title" value={data.designation}
+                      onChange={(v) => onChange({ designation: v })} placeholder="Senior Product Designer" />
                     <FontSizeInline value={data.fontSizeTitle ?? 100} onChange={(v) => onChange({ fontSizeTitle: v })} />
                   </div>
-                  <div>
-                    <InputField
-                      label="Slogan / Tagline"
-                      value={data.slogan ?? ""}
-                      onChange={(v) => onChange({ slogan: v })}
-                      placeholder="Innovating your future"
-                    />
-                    <FontSizeInline value={data.fontSizeSlogan ?? 100} onChange={(v) => onChange({ fontSizeSlogan: v })} />
-                  </div>
+                  {cfg.personal.showSlogan && (
+                    <div>
+                      <InputField label="Slogan / Tagline" value={data.slogan ?? ""}
+                        onChange={(v) => onChange({ slogan: v })} placeholder="Innovating your future" />
+                      <FontSizeInline value={data.fontSizeSlogan ?? 100} onChange={(v) => onChange({ fontSizeSlogan: v })} />
+                    </div>
+                  )}
                 </>
               )}
-              {/* Back-side fields: Company Name, Slogan, Logo Text */}
               {side === "back" && (
                 <>
                   <div>
-                    <InputField
-                      label="Company Name"
-                      value={data.company}
-                      onChange={(v) => onChange({ company: v })}
-                      placeholder="Innovate Studio"
-                    />
+                    <InputField label="Company Name" value={data.company}
+                      onChange={(v) => onChange({ company: v })} placeholder="Innovate Studio" />
                     <FontSizeInline value={data.fontSizeCompany ?? 100} onChange={(v) => onChange({ fontSizeCompany: v })} />
                   </div>
                   <div>
-                    <InputField
-                      label="Slogan / Tagline"
-                      value={data.slogan ?? ""}
-                      onChange={(v) => onChange({ slogan: v })}
-                      placeholder="Innovating your future"
-                    />
+                    <InputField label="Slogan / Tagline" value={data.slogan ?? ""}
+                      onChange={(v) => onChange({ slogan: v })} placeholder="Innovating your future" />
                     <FontSizeInline value={data.fontSizeSlogan ?? 100} onChange={(v) => onChange({ fontSizeSlogan: v })} />
                   </div>
-                  <InputField
-                    label="Logo Text (Monogram)"
-                    value={data.logoText}
-                    onChange={(v) => onChange({ logoText: v.substring(0, 3) })}
-                    placeholder="IS"
-                  />
+                  <InputField label="Logo Text (Monogram)" value={data.logoText}
+                    onChange={(v) => onChange({ logoText: v.substring(0, 3) })} placeholder="IS" />
                 </>
               )}
             </Section>
 
-            {/* Logo uploads — show relevant side's logo */}
+            {/* Logo — shown only for non-custom templates and only when config allows */}
             {templateId !== "custom-upload" && (
-              <Section title="Logo">
-                {side === "back" && tpl.showBackLogo ? (
-                  <LogoUpload
-                    label="Back Logo"
-                    value={data.logoUrlBack}
-                    onChange={(v) => onChange({ logoUrlBack: v })}
-                    hint="Reuses front logo if empty"
-                    size={data.logoSizeBack ?? 100}
-                    onSizeChange={(v) => onChange({ logoSizeBack: v })}
-                  />
-                ) : (
-                  <LogoUpload
-                    label="Front Logo"
-                    value={data.logoUrlFront}
-                    onChange={(v) => onChange({ logoUrlFront: v })}
-                    size={data.logoSizeFront ?? 100}
-                    onSizeChange={(v) => onChange({ logoSizeFront: v })}
-                  />
-                )}
-              </Section>
+              (side === "back" ? cfg.personal.showLogoBack : cfg.personal.showLogoFront) && (
+                <Section title="Logo">
+                  {side === "back" ? (
+                    <LogoUpload label="Back Logo" value={data.logoUrlBack}
+                      onChange={(v) => onChange({ logoUrlBack: v })} hint="Reuses front logo if empty"
+                      size={data.logoSizeBack ?? 100} onSizeChange={(v) => onChange({ logoSizeBack: v })} />
+                  ) : (
+                    <LogoUpload label="Front Logo" value={data.logoUrlFront}
+                      onChange={(v) => onChange({ logoUrlFront: v })}
+                      size={data.logoSizeFront ?? 100} onSizeChange={(v) => onChange({ logoSizeFront: v })} />
+                  )}
+                </Section>
+              )
             )}
-
           </>
         )}
 
         {/* ── CONTACT TAB ── */}
         {activeTab === "contact" && (
-          <Section title={side === "back" ? "Back Side — Tagline" : "Contact Details"}>
-            {/* Front-side: all contact fields */}
+          <Section title={side === "back" ? "Back Side" : "Contact Details"}>
             {side !== "back" && (
               <>
-                <div>
-                  <InputField
-                    label="Company Name"
-                    value={data.company}
-                    onChange={(v) => onChange({ company: v })}
-                    placeholder="Acme Inc."
-                  />
-                  <FontSizeInline value={data.fontSizeCompany ?? 100} onChange={(v) => onChange({ fontSizeCompany: v })} />
-                </div>
-                <div>
-                  <InputField
-                    label="Phone"
-                    value={data.phone}
-                    onChange={(v) => onChange({ phone: v })}
-                    placeholder="+1 (555) 123-4567"
-                    type="tel"
-                  />
-                  <FontSizeInline value={data.fontSizePhone ?? 100} onChange={(v) => onChange({ fontSizePhone: v })} />
-                </div>
-                {tpl.showMobile && (
+                {cfg.contact.showCompany && (
                   <div>
-                    <InputField
-                      label="Mobile"
-                      value={data.mobile}
-                      onChange={(v) => onChange({ mobile: v })}
-                      placeholder="+1 (555) 987-6543"
-                      type="tel"
-                    />
+                    <InputField label="Company Name" value={data.company}
+                      onChange={(v) => onChange({ company: v })} placeholder="Acme Inc." />
+                    <FontSizeInline value={data.fontSizeCompany ?? 100} onChange={(v) => onChange({ fontSizeCompany: v })} />
+                  </div>
+                )}
+                {cfg.contact.showPhone && (
+                  <div>
+                    <InputField label="Phone" value={data.phone}
+                      onChange={(v) => onChange({ phone: v })} placeholder="+1 (555) 123-4567" type="tel" />
                     <FontSizeInline value={data.fontSizePhone ?? 100} onChange={(v) => onChange({ fontSizePhone: v })} />
                   </div>
                 )}
-                {tpl.showAddress && (
+                {cfg.contact.showMobile && (
                   <div>
-                    <InputField
-                      label="Office Address"
-                      value={data.address}
-                      onChange={(v) => onChange({ address: v })}
-                      placeholder="123 Design Street, San Francisco, CA"
-                    />
+                    <InputField label="Mobile" value={data.mobile}
+                      onChange={(v) => onChange({ mobile: v })} placeholder="+1 (555) 987-6543" type="tel" />
+                    <FontSizeInline value={data.fontSizePhone ?? 100} onChange={(v) => onChange({ fontSizePhone: v })} />
+                  </div>
+                )}
+                {cfg.contact.showAddress && (
+                  <div>
+                    <InputField label="Office Address" value={data.address}
+                      onChange={(v) => onChange({ address: v })} placeholder="123 Design Street, San Francisco, CA" />
                     <FontSizeInline value={data.fontSizeAddress ?? 100} onChange={(v) => onChange({ fontSizeAddress: v })} />
                   </div>
                 )}
-                <div>
-                  <InputField
-                    label="Email Address"
-                    value={data.email}
-                    onChange={(v) => onChange({ email: v })}
-                    placeholder="alex@company.com"
-                    type="email"
-                  />
-                  <FontSizeInline value={data.fontSizeEmail ?? 100} onChange={(v) => onChange({ fontSizeEmail: v })} />
-                </div>
-                <div>
-                  <InputField
-                    label="Website"
-                    value={data.website}
-                    onChange={(v) => onChange({ website: v })}
-                    placeholder="www.company.com"
-                  />
-                  <FontSizeInline value={data.fontSizeWebsite ?? 100} onChange={(v) => onChange({ fontSizeWebsite: v })} />
-                </div>
+                {cfg.contact.showEmail && (
+                  <div>
+                    <InputField label="Email Address" value={data.email}
+                      onChange={(v) => onChange({ email: v })} placeholder="alex@company.com" type="email" />
+                    <FontSizeInline value={data.fontSizeEmail ?? 100} onChange={(v) => onChange({ fontSizeEmail: v })} />
+                  </div>
+                )}
+                {cfg.contact.showWebsite && (
+                  <div>
+                    <InputField label="Website" value={data.website}
+                      onChange={(v) => onChange({ website: v })} placeholder="www.company.com" />
+                    <FontSizeInline value={data.fontSizeWebsite ?? 100} onChange={(v) => onChange({ fontSizeWebsite: v })} />
+                  </div>
+                )}
               </>
             )}
-            {/* Back-side: website only */}
             {side === "back" && (
               <div>
-                <InputField
-                  label="Website"
-                  value={data.website}
-                  onChange={(v) => onChange({ website: v })}
-                  placeholder="www.company.com"
-                />
+                <InputField label="Website" value={data.website}
+                  onChange={(v) => onChange({ website: v })} placeholder="www.company.com" />
                 <FontSizeInline value={data.fontSizeWebsite ?? 100} onChange={(v) => onChange({ fontSizeWebsite: v })} />
               </div>
             )}
@@ -641,29 +423,22 @@ export default function FormPanel({ data, onChange, templateId, side = "front" }
 
         {/* ── SOCIAL TAB ── */}
         {activeTab === "social" && (
-          tpl.socialFields.length === 0 ? (
+          cfg.social.length === 0 ? (
             <div className="flex flex-col items-center gap-3 py-10 text-center px-4">
               <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center">
                 <Share2 size={20} className="text-slate-300" />
               </div>
               <div>
                 <p className="text-sm font-medium text-slate-500">No social fields for this template</p>
-                <p className="text-xs text-slate-400 mt-1">
-                  This template doesn&apos;t display social media profiles on the card.
-                  Switch to a template like Creative or Tech Modern to add social links.
-                </p>
+                <p className="text-xs text-slate-400 mt-1">This template doesn&apos;t display social media profiles. Try Creative or Tech Modern.</p>
               </div>
             </div>
           ) : (
             <Section title="Social Profiles">
-              {tpl.socialFields.map((field) => (
-                <InputField
-                  key={field}
-                  label={socialFieldMeta[field].label}
-                  value={data[field]}
-                  onChange={(v) => onChange({ [field]: v })}
-                  placeholder={socialFieldMeta[field].placeholder}
-                />
+              {cfg.social.map((field) => (
+                <InputField key={field} label={socialFieldMeta[field].label}
+                  value={data[field]} onChange={(v) => onChange({ [field]: v })}
+                  placeholder={socialFieldMeta[field].placeholder} />
               ))}
             </Section>
           )
@@ -674,12 +449,10 @@ export default function FormPanel({ data, onChange, templateId, side = "front" }
           <>
             <Section title="Color Presets">
               <div className="grid grid-cols-3 gap-2">
-                {colorPresets.map((preset) => (
-                  <button
-                    key={preset.name}
+                {cfg.colorPresets.map((preset) => (
+                  <button key={preset.name}
                     onClick={() => onChange({ primaryColor: preset.primary, secondaryColor: preset.secondary, accentColor: preset.accent })}
-                    className="flex flex-col items-center gap-1.5 p-2 rounded-lg border border-slate-200 hover:border-blue-300 hover:bg-blue-50/50 transition-all group"
-                  >
+                    className="flex flex-col items-center gap-1.5 p-2 rounded-lg border border-slate-200 hover:border-blue-300 hover:bg-blue-50/50 transition-all group">
                     <div className="flex gap-1">
                       {[preset.primary, preset.secondary, preset.accent].map((c) => (
                         <div key={c} className="w-4 h-4 rounded-full border border-white/50 shadow-sm" style={{ backgroundColor: c }} />
@@ -693,22 +466,20 @@ export default function FormPanel({ data, onChange, templateId, side = "front" }
 
             <Section title="Custom Colors">
               {([
-                { label: "Primary Color",   key: "primaryColor"   as keyof CardData },
-                { label: "Secondary Color", key: "secondaryColor" as keyof CardData },
-                { label: "Accent Color",    key: "accentColor"    as keyof CardData },
-              ] as const).map(({ label, key }) => (
+                { label: "Primary Color",   key: "primaryColor"   as const },
+                { label: "Secondary Color", key: "secondaryColor" as const },
+                { label: "Accent Color",    key: "accentColor"    as const },
+              ]).map(({ label, key }) => (
                 <div key={key} className="flex items-center justify-between">
                   <span className="text-sm text-slate-600">{label}</span>
                   <div className="flex items-center gap-2">
                     <span className="text-xs text-slate-400 font-mono">{(data[key] as string) || "#000000"}</span>
                     <label className="relative cursor-pointer">
-                      <div className="w-10 h-8 rounded-lg border-2 border-slate-200 shadow-sm overflow-hidden" style={{ backgroundColor: (data[key] as string) || "#000000" }} />
-                      <input
-                        type="color"
-                        value={(data[key] as string) || "#000000"}
+                      <div className="w-10 h-8 rounded-lg border-2 border-slate-200 shadow-sm overflow-hidden"
+                        style={{ backgroundColor: (data[key] as string) || "#000000" }} />
+                      <input type="color" value={(data[key] as string) || "#000000"}
                         onChange={(e) => onChange({ [key]: e.target.value })}
-                        className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
-                      />
+                        className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" />
                     </label>
                   </div>
                 </div>
@@ -733,24 +504,22 @@ export default function FormPanel({ data, onChange, templateId, side = "front" }
 
             <Section title="Font Sizes">
               <div className="space-y-5">
-                {(
-                  [
-                    { label: "Name",              key: "fontSizeName"    as const, hint: data.fontSizeName    },
-                    { label: "Title / Designation", key: "fontSizeTitle"  as const, hint: data.fontSizeTitle  },
-                    { label: "Contact Details",   key: "fontSizeDetails" as const, hint: data.fontSizeDetails },
-                  ] as const
-                ).map(({ label, key, hint }) => (
+                {([
+                  { label: "Name",               key: "fontSizeName"    as const },
+                  { label: "Title / Designation", key: "fontSizeTitle"   as const },
+                  { label: "Contact Details",     key: "fontSizeDetails" as const },
+                ]).map(({ label, key }) => (
                   <div key={key} className="space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-medium text-slate-600">{label}</span>
                       <div className="flex items-center gap-2">
-                        <span className="text-xs font-mono text-slate-400 w-8 text-right">{hint}%</span>
+                        <span className="text-xs font-mono text-slate-400 w-8 text-right">{data[key]}%</span>
                         <button onClick={() => onChange({ [key]: 100 })} className="text-[10px] text-slate-400 hover:text-blue-500 transition-colors">Reset</button>
                       </div>
                     </div>
-                    <input type="range" min={50} max={200} step={5} value={hint} onChange={(e) => onChange({ [key]: Number(e.target.value) })}
-                      className="w-full h-1.5 bg-slate-200 rounded-full appearance-none cursor-pointer accent-blue-500"
-                    />
+                    <input type="range" min={50} max={200} step={5} value={data[key]}
+                      onChange={(e) => onChange({ [key]: Number(e.target.value) })}
+                      className="w-full h-1.5 bg-slate-200 rounded-full appearance-none cursor-pointer accent-blue-500" />
                     <div className="flex justify-between text-[9px] text-slate-300"><span>50%</span><span>Default</span><span>200%</span></div>
                   </div>
                 ))}
@@ -761,14 +530,12 @@ export default function FormPanel({ data, onChange, templateId, side = "front" }
 
         {/* ── QR CODE TAB ── */}
         {activeTab === "qr" && (
-          tpl.showQR ? (
+          cfg.showQR ? (
             <Section title="QR Code Settings">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-slate-600">Show QR Code</span>
-                <button
-                  onClick={() => onChange({ showQR: !data.showQR })}
-                  className={cn("relative w-11 h-6 rounded-full transition-colors", data.showQR ? "bg-blue-500" : "bg-slate-200")}
-                >
+                <button onClick={() => onChange({ showQR: !data.showQR })}
+                  className={cn("relative w-11 h-6 rounded-full transition-colors", data.showQR ? "bg-blue-500" : "bg-slate-200")}>
                   <div className={cn("absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform", data.showQR ? "translate-x-5" : "translate-x-0")} />
                 </button>
               </div>
@@ -779,16 +546,9 @@ export default function FormPanel({ data, onChange, templateId, side = "front" }
                     <label className="text-xs font-medium text-slate-500 uppercase tracking-wider">QR Type</label>
                     <div className="grid grid-cols-2 gap-2">
                       {(["website", "linkedin", "vcard", "custom"] as const).map((type) => (
-                        <button
-                          key={type}
-                          onClick={() => onChange({ qrCodeType: type })}
-                          className={cn(
-                            "px-3 py-2 text-xs rounded-lg border transition-all capitalize",
-                            data.qrCodeType === type
-                              ? "bg-blue-500 text-white border-blue-500"
-                              : "bg-white text-slate-600 border-slate-200 hover:border-blue-300"
-                          )}
-                        >
+                        <button key={type} onClick={() => onChange({ qrCodeType: type })}
+                          className={cn("px-3 py-2 text-xs rounded-lg border transition-all capitalize",
+                            data.qrCodeType === type ? "bg-blue-500 text-white border-blue-500" : "bg-white text-slate-600 border-slate-200 hover:border-blue-300")}>
                           {type === "vcard" ? "vCard" : type}
                         </button>
                       ))}
@@ -798,10 +558,8 @@ export default function FormPanel({ data, onChange, templateId, side = "front" }
                   {data.qrCodeType !== "vcard" && (
                     <InputField
                       label={data.qrCodeType === "website" ? "Website URL" : data.qrCodeType === "linkedin" ? "LinkedIn URL" : "Custom URL"}
-                      value={data.qrCodeValue}
-                      onChange={(v) => onChange({ qrCodeValue: v })}
-                      placeholder={data.qrCodeType === "website" ? "https://yourwebsite.com" : "https://..."}
-                    />
+                      value={data.qrCodeValue} onChange={(v) => onChange({ qrCodeValue: v })}
+                      placeholder={data.qrCodeType === "website" ? "https://yourwebsite.com" : "https://..."} />
                   )}
 
                   {data.qrCodeType === "vcard" && (
@@ -815,14 +573,12 @@ export default function FormPanel({ data, onChange, templateId, side = "front" }
                         { label: "Phone",   value: data.phone || data.mobile },
                         { label: "Address", value: data.address },
                         { label: "Website", value: data.website },
-                      ].map(({ label, value }) =>
-                        value ? (
-                          <div key={label} className="flex gap-2 text-xs">
-                            <span className="text-slate-400 w-14 flex-shrink-0">{label}</span>
-                            <span className="text-slate-700 font-medium truncate">{value}</span>
-                          </div>
-                        ) : null
-                      )}
+                      ].map(({ label, value }) => value ? (
+                        <div key={label} className="flex gap-2 text-xs">
+                          <span className="text-slate-400 w-14 flex-shrink-0">{label}</span>
+                          <span className="text-slate-700 font-medium truncate">{value}</span>
+                        </div>
+                      ) : null)}
                     </div>
                   )}
                 </>
@@ -835,13 +591,12 @@ export default function FormPanel({ data, onChange, templateId, side = "front" }
               </div>
               <div>
                 <p className="text-sm font-medium text-slate-500">QR Code not available</p>
-                <p className="text-xs text-slate-400 mt-1">
-                  This template doesn&apos;t include a QR code. Choose a different template to add one.
-                </p>
+                <p className="text-xs text-slate-400 mt-1">This template doesn&apos;t include a QR code. Choose a different template to add one.</p>
               </div>
             </div>
           )
         )}
+
       </div>
     </div>
   );
