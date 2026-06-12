@@ -301,19 +301,18 @@ export default function RDashPro({ data, side = "front", scale = 1 }: Props) {
           </text>
         )}
 
-        {/* Tagline */}
+        {/* Tagline / slogan – plain text, size follows detail scale */}
         {data.website && (
           <text
             x={RIGHT_CX}
             y={158}
             textAnchor="middle"
             fill="white"
-            opacity="0.5"
-            fontSize={11}
+            opacity="0.65"
+            fontSize={13 * dScale}
             fontFamily={font}
-            letterSpacing="2"
           >
-            {data.website.replace(/^https?:\/\//, "").toUpperCase()}
+            {data.website.replace(/^https?:\/\//, "")}
           </text>
         )}
 
