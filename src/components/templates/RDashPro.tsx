@@ -211,8 +211,6 @@ export default function RDashPro({ data, side = "front", scale = 1 }: Props) {
           {data.designation || "Designation"}
         </text>
 
-        {/* Thin red separator */}
-        <rect x={60} y={152} width={260} height={1.5} fill={red} rx={1} opacity="0.3" />
 
         {/* ── Email – uses /email.svg path (viewBox 8.51×5.81, scaled ×2.6) ── */}
         {hasEmail && (
