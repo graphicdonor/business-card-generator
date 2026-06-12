@@ -796,9 +796,25 @@ export default function FormPanel({ data, onChange, templateId, side = "front" }
                   )}
 
                   {data.qrCodeType === "vcard" && (
-                    <p className="text-xs text-slate-400 bg-slate-50 p-3 rounded-lg">
-                      The QR code will encode your complete contact information as a vCard that can be saved directly to a phone.
-                    </p>
+                    <div className="bg-slate-50 border border-slate-100 rounded-lg p-3 space-y-1.5">
+                      <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Encoded in QR</p>
+                      {[
+                        { label: "Name",    value: data.fullName },
+                        { label: "Title",   value: data.designation },
+                        { label: "Company", value: data.company },
+                        { label: "Email",   value: data.email },
+                        { label: "Phone",   value: data.phone || data.mobile },
+                        { label: "Address", value: data.address },
+                        { label: "Website", value: data.website },
+                      ].map(({ label, value }) =>
+                        value ? (
+                          <div key={label} className="flex gap-2 text-xs">
+                            <span className="text-slate-400 w-14 flex-shrink-0">{label}</span>
+                            <span className="text-slate-700 font-medium truncate">{value}</span>
+                          </div>
+                        ) : null
+                      )}
+                    </div>
                   )}
                 </>
               )}
