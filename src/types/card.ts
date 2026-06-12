@@ -31,6 +31,14 @@ export interface CardData {
   fontSizeTitle: number;
   fontSizeDetails: number;
 
+  // Per-field font sizes (independent controls per input)
+  fontSizeDesignation: number;
+  fontSizeEmail: number;
+  fontSizePhone: number;
+  fontSizeAddress: number;
+  fontSizeCompany: number;
+  fontSizeWebsite: number;
+
   // Logo
   logoUrl: string | null;       // legacy fallback – used if logoUrlFront/Back are null
   logoUrlFront: string | null;  // logo shown on the front side

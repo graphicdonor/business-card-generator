@@ -26,9 +26,13 @@ export default function RDashPro({ data, side = "front", scale = 1 }: Props) {
   const red   = data.primaryColor   || "#E21F26";
   const navy  = data.secondaryColor || "#354054";
   const font  = `"${data.fontFamily || "Inter"}", sans-serif`;
-  const nScale = (data.fontSizeName   ?? 100) / 100;
-  const tScale = (data.fontSizeTitle  ?? 100) / 100;
-  const dScale = (data.fontSizeDetails ?? 100) / 100;
+  const nScale = (data.fontSizeName        ?? 100) / 100;
+  const tScale = (data.fontSizeTitle       ?? 100) / 100;
+  const eScale = (data.fontSizeEmail       ?? 100) / 100;
+  const pScale = (data.fontSizePhone       ?? 100) / 100;
+  const aScale = (data.fontSizeAddress     ?? 100) / 100;
+  const cScale = (data.fontSizeCompany     ?? 100) / 100;
+  const wScale = (data.fontSizeWebsite     ?? 100) / 100;
 
   const frontLogo = data.logoUrlFront ?? data.logoUrl;
   const backLogo  = data.logoUrlBack  ?? data.logoUrl;
@@ -84,7 +88,7 @@ export default function RDashPro({ data, side = "front", scale = 1 }: Props) {
             y={H / 2 - 15}
             textAnchor="middle"
             fill={navy}
-            fontSize={72}
+            fontSize={72 * cScale}
             fontWeight="900"
             fontFamily={font}
             letterSpacing="-1"
@@ -100,12 +104,12 @@ export default function RDashPro({ data, side = "front", scale = 1 }: Props) {
             y={backLogo ? bY + bHt + 38 : H / 2 + 55}
             textAnchor="middle"
             fill={red}
-            fontSize={13}
+            fontSize={13 * wScale}
             fontWeight="600"
             fontFamily={font}
             letterSpacing="2.5"
           >
-            {data.website.toUpperCase()}
+            {data.website.replace(/^https?:\/\//, "")}
           </text>
         )}
       </svg>
@@ -221,7 +225,7 @@ export default function RDashPro({ data, side = "front", scale = 1 }: Props) {
                 fill={navy}
               />
             </g>
-            <text x={32} y={13} fill={navy} fontSize={19 * dScale} fontFamily={font}>
+            <text x={32} y={13} fill={navy} fontSize={19 * eScale} fontFamily={font}>
               {data.email}
             </text>
           </g>
@@ -236,7 +240,7 @@ export default function RDashPro({ data, side = "front", scale = 1 }: Props) {
                 fill={navy}
               />
             </g>
-            <text x={32} y={15} fill={navy} fontSize={19 * dScale} fontFamily={font}>
+            <text x={32} y={15} fill={navy} fontSize={19 * pScale} fontFamily={font}>
               {data.phone || data.mobile}
             </text>
           </g>
@@ -258,7 +262,7 @@ export default function RDashPro({ data, side = "front", scale = 1 }: Props) {
                 x={24}
                 y={i * LINE_H + 20}
                 fill={navy}
-                fontSize={17 * dScale}
+                fontSize={17 * aScale}
                 fontFamily={font}
               >
                 {line}
@@ -288,7 +292,7 @@ export default function RDashPro({ data, side = "front", scale = 1 }: Props) {
             y={90}
             textAnchor="middle"
             fill="white"
-            fontSize={32}
+            fontSize={32 * cScale}
             fontWeight="800"
             fontFamily={font}
             letterSpacing="3"
@@ -305,7 +309,7 @@ export default function RDashPro({ data, side = "front", scale = 1 }: Props) {
             textAnchor="middle"
             fill="white"
             opacity="0.65"
-            fontSize={13 * dScale}
+            fontSize={13 * wScale}
             fontFamily={font}
           >
             {data.website.replace(/^https?:\/\//, "")}

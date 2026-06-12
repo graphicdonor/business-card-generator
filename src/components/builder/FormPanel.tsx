@@ -115,6 +115,33 @@ function InputField({
   );
 }
 
+function FontSizeInline({ value = 100, onChange }: { value?: number; onChange: (n: number) => void }) {
+  return (
+    <div className="flex items-center gap-1.5 pt-1">
+      <span className="text-[9px] text-slate-400 font-medium uppercase tracking-wider">Size</span>
+      <button
+        type="button"
+        onClick={() => onChange(Math.max(50, value - 5))}
+        className="w-4 h-4 flex items-center justify-center text-slate-400 hover:text-slate-700 border border-slate-200 hover:border-slate-300 rounded text-[10px] leading-none transition-colors"
+      >−</button>
+      <span className="text-[10px] font-mono text-slate-500 w-7 text-center tabular-nums">{value}%</span>
+      <button
+        type="button"
+        onClick={() => onChange(Math.min(200, value + 5))}
+        className="w-4 h-4 flex items-center justify-center text-slate-400 hover:text-slate-700 border border-slate-200 hover:border-slate-300 rounded text-[10px] leading-none transition-colors"
+      >+</button>
+      {value !== 100 && (
+        <button
+          type="button"
+          onClick={() => onChange(100)}
+          className="text-[9px] text-blue-400 hover:text-blue-600 transition-colors"
+          title="Reset to 100%"
+        >↺</button>
+      )}
+    </div>
+  );
+}
+
 function Section({
   title,
   children,
@@ -426,24 +453,33 @@ export default function FormPanel({ data, onChange, templateId }: Props) {
             )}
 
             <Section title="Personal Info">
-              <InputField
-                label="Full Name"
-                value={data.fullName}
-                onChange={(v) => onChange({ fullName: v })}
-                placeholder="Alex Johnson"
-              />
-              <InputField
-                label="Designation / Title"
-                value={data.designation}
-                onChange={(v) => onChange({ designation: v })}
-                placeholder="Senior Product Designer"
-              />
-              <InputField
-                label="Company Name"
-                value={data.company}
-                onChange={(v) => onChange({ company: v })}
-                placeholder="Innovate Studio"
-              />
+              <div>
+                <InputField
+                  label="Full Name"
+                  value={data.fullName}
+                  onChange={(v) => onChange({ fullName: v })}
+                  placeholder="Alex Johnson"
+                />
+                <FontSizeInline value={data.fontSizeName ?? 100} onChange={(v) => onChange({ fontSizeName: v })} />
+              </div>
+              <div>
+                <InputField
+                  label="Designation / Title"
+                  value={data.designation}
+                  onChange={(v) => onChange({ designation: v })}
+                  placeholder="Senior Product Designer"
+                />
+                <FontSizeInline value={data.fontSizeTitle ?? 100} onChange={(v) => onChange({ fontSizeTitle: v })} />
+              </div>
+              <div>
+                <InputField
+                  label="Company Name"
+                  value={data.company}
+                  onChange={(v) => onChange({ company: v })}
+                  placeholder="Innovate Studio"
+                />
+                <FontSizeInline value={data.fontSizeCompany ?? 100} onChange={(v) => onChange({ fontSizeCompany: v })} />
+              </div>
               <InputField
                 label="Logo Text (Monogram)"
                 value={data.logoText}
@@ -491,43 +527,58 @@ export default function FormPanel({ data, onChange, templateId }: Props) {
         {/* ── CONTACT TAB ── */}
         {activeTab === "contact" && (
           <Section title="Contact Details">
-            <InputField
-              label="Phone"
-              value={data.phone}
-              onChange={(v) => onChange({ phone: v })}
-              placeholder="+1 (555) 123-4567"
-              type="tel"
-            />
-            {tpl.showMobile && (
+            <div>
               <InputField
-                label="Mobile"
-                value={data.mobile}
-                onChange={(v) => onChange({ mobile: v })}
-                placeholder="+1 (555) 987-6543"
+                label="Phone"
+                value={data.phone}
+                onChange={(v) => onChange({ phone: v })}
+                placeholder="+1 (555) 123-4567"
                 type="tel"
               />
+              <FontSizeInline value={data.fontSizePhone ?? 100} onChange={(v) => onChange({ fontSizePhone: v })} />
+            </div>
+            {tpl.showMobile && (
+              <div>
+                <InputField
+                  label="Mobile"
+                  value={data.mobile}
+                  onChange={(v) => onChange({ mobile: v })}
+                  placeholder="+1 (555) 987-6543"
+                  type="tel"
+                />
+                <FontSizeInline value={data.fontSizePhone ?? 100} onChange={(v) => onChange({ fontSizePhone: v })} />
+              </div>
             )}
             {tpl.showAddress && (
-              <InputField
-                label="Office Address"
-                value={data.address}
-                onChange={(v) => onChange({ address: v })}
-                placeholder="123 Design Street, San Francisco, CA"
-              />
+              <div>
+                <InputField
+                  label="Office Address"
+                  value={data.address}
+                  onChange={(v) => onChange({ address: v })}
+                  placeholder="123 Design Street, San Francisco, CA"
+                />
+                <FontSizeInline value={data.fontSizeAddress ?? 100} onChange={(v) => onChange({ fontSizeAddress: v })} />
+              </div>
             )}
-            <InputField
-              label="Email Address"
-              value={data.email}
-              onChange={(v) => onChange({ email: v })}
-              placeholder="alex@company.com"
-              type="email"
-            />
-            <InputField
-              label="Website"
-              value={data.website}
-              onChange={(v) => onChange({ website: v })}
-              placeholder="www.company.com"
-            />
+            <div>
+              <InputField
+                label="Email Address"
+                value={data.email}
+                onChange={(v) => onChange({ email: v })}
+                placeholder="alex@company.com"
+                type="email"
+              />
+              <FontSizeInline value={data.fontSizeEmail ?? 100} onChange={(v) => onChange({ fontSizeEmail: v })} />
+            </div>
+            <div>
+              <InputField
+                label="Website"
+                value={data.website}
+                onChange={(v) => onChange({ website: v })}
+                placeholder="www.company.com"
+              />
+              <FontSizeInline value={data.fontSizeWebsite ?? 100} onChange={(v) => onChange({ fontSizeWebsite: v })} />
+            </div>
           </Section>
         )}
 
