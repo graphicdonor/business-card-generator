@@ -14,7 +14,6 @@ import { createClient } from "@/lib/supabase/client";
 import {
   ArrowLeft,
   Download,
-  Save,
   Layers,
   Sparkles,
   RefreshCw,
@@ -50,7 +49,6 @@ function BuilderInner({ id }: { id: string }) {
   );
 
   const [exportOpen, setExportOpen] = useState(false);
-  const [saved, setSaved] = useState(false);
   const [cloudSaved, setCloudSaved] = useState(false);
   const [cloudSaving, setCloudSaving] = useState(false);
   const [activeSide, setActiveSide] = useState<"front" | "back">("front");
@@ -99,13 +97,6 @@ function BuilderInner({ id }: { id: string }) {
     if (template) {
       setCardData(defaultCardData(template));
     }
-  };
-
-  const handleSave = () => {
-    const key = `card-${id}-${Date.now()}`;
-    localStorage.setItem(key, JSON.stringify(cardData));
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
   };
 
   const handleCloudSave = async () => {
@@ -237,20 +228,6 @@ function BuilderInner({ id }: { id: string }) {
             title="Reset to defaults"
           >
             <RefreshCw size={15} />
-          </button>
-
-          {/* Save */}
-          <button
-            onClick={handleSave}
-            className={cn(
-              "flex items-center gap-1.5 px-2.5 sm:px-3 py-2 text-xs font-semibold rounded-lg border transition-all",
-              saved
-                ? "bg-green-50 text-green-600 border-green-200"
-                : "bg-white text-slate-600 border-slate-200 hover:border-slate-300"
-            )}
-          >
-            <Save size={14} />
-            <span className="hidden sm:inline">{saved ? "Saved!" : "Save"}</span>
           </button>
 
           {/* Save to account */}
