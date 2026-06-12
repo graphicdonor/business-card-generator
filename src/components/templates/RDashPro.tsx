@@ -312,8 +312,6 @@ export default function RDashPro({ data, side = "front", scale = 1 }: Props) {
           </text>
         )}
 
-        {/* Thin divider below tagline */}
-        <rect x={RIGHT_X + 30} y={168} width={RIGHT_W - 60} height={0.75} fill="white" opacity="0.15" />
 
         {/* QR code – centered in right panel */}
         <QRCodeBlock
