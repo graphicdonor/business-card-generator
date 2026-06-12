@@ -43,6 +43,7 @@ export default function BuilderPage({ params }: Props) {
 
   const [exportOpen, setExportOpen] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [activeSide, setActiveSide] = useState<"front" | "back">("front");
 
   // Restore extracted card data when navigating from the custom-upload template
   useEffect(() => {
@@ -197,12 +198,12 @@ export default function BuilderPage({ params }: Props) {
       <div className="flex flex-1 min-h-0">
         {/* Left Panel: Form */}
         <aside className="w-[360px] flex-shrink-0 border-r border-slate-200 overflow-hidden flex flex-col bg-white">
-          <FormPanel data={cardData} onChange={handleChange} templateId={id} />
+          <FormPanel data={cardData} onChange={handleChange} templateId={id} side={activeSide} />
         </aside>
 
         {/* Right Panel: Preview */}
         <main className="flex-1 min-w-0 overflow-hidden">
-          <CardPreview templateId={id} data={cardData} />
+          <CardPreview templateId={id} data={cardData} activeSide={activeSide} onSideChange={setActiveSide} />
         </main>
       </div>
 

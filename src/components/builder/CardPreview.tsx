@@ -10,10 +10,14 @@ interface Props {
   templateId: string;
   data: CardData;
   showBothSides?: boolean;
+  activeSide?: "front" | "back";
+  onSideChange?: (side: "front" | "back") => void;
 }
 
-export default function CardPreview({ templateId, data, showBothSides = false }: Props) {
-  const [activeSide, setActiveSide] = useState<"front" | "back">("front");
+export default function CardPreview({ templateId, data, showBothSides = false, activeSide: activeSideProp, onSideChange }: Props) {
+  const [activeSideLocal, setActiveSideLocal] = useState<"front" | "back">("front");
+  const activeSide = activeSideProp ?? activeSideLocal;
+  const setActiveSide = onSideChange ?? setActiveSideLocal;
   const [zoom, setZoom] = useState(1);
   const [showSafeArea, setShowSafeArea] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);

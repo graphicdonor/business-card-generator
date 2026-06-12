@@ -26,6 +26,7 @@ interface Props {
   data: CardData;
   onChange: (updates: Partial<CardData>) => void;
   templateId?: string;
+  side?: "front" | "back";
 }
 
 type TabId = "info" | "contact" | "social" | "branding" | "qr";
@@ -305,7 +306,7 @@ function ImageUploadField({
 
 const pickerTemplates = templates.filter((t) => t.id !== "custom-upload");
 
-export default function FormPanel({ data, onChange, templateId }: Props) {
+export default function FormPanel({ data, onChange, templateId, side = "front" }: Props) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<TabId>("info");
   const [extracting, setExtracting] = useState(false);
@@ -316,6 +317,17 @@ export default function FormPanel({ data, onChange, templateId }: Props) {
   useEffect(() => {
     preloadCommonFonts();
   }, []);
+
+  // Auto-switch away from tabs that are hidden on back side
+  useEffect(() => {
+    if (side === "back" && (activeTab === "social" || activeTab === "qr")) {
+      setActiveTab("info");
+    }
+  }, [side]);
+
+  const visibleTabs = tabs.filter(
+    (tab) => side !== "back" || (tab.id !== "social" && tab.id !== "qr")
+  );
 
   const handleExtract = async () => {
     if (!data.customFrontImage) return;
@@ -365,7 +377,7 @@ export default function FormPanel({ data, onChange, templateId }: Props) {
     <div className="h-full flex flex-col bg-white">
       {/* Tab Bar */}
       <div className="flex border-b border-slate-100 px-2 pt-2 gap-1 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
-        {tabs.map((tab) => (
+        {visibleTabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
@@ -452,63 +464,64 @@ export default function FormPanel({ data, onChange, templateId }: Props) {
               </Section>
             )}
 
-            <Section title="Personal Info">
-              <div>
-                <InputField
-                  label="Full Name"
-                  value={data.fullName}
-                  onChange={(v) => onChange({ fullName: v })}
-                  placeholder="Alex Johnson"
-                />
-                <FontSizeInline value={data.fontSizeName ?? 100} onChange={(v) => onChange({ fontSizeName: v })} />
-              </div>
-              <div>
-                <InputField
-                  label="Designation / Title"
-                  value={data.designation}
-                  onChange={(v) => onChange({ designation: v })}
-                  placeholder="Senior Product Designer"
-                />
-                <FontSizeInline value={data.fontSizeTitle ?? 100} onChange={(v) => onChange({ fontSizeTitle: v })} />
-              </div>
-              <div>
-                <InputField
-                  label="Company Name"
-                  value={data.company}
-                  onChange={(v) => onChange({ company: v })}
-                  placeholder="Innovate Studio"
-                />
-                <FontSizeInline value={data.fontSizeCompany ?? 100} onChange={(v) => onChange({ fontSizeCompany: v })} />
-              </div>
-              <InputField
-                label="Logo Text (Monogram)"
-                value={data.logoText}
-                onChange={(v) => onChange({ logoText: v.substring(0, 3) })}
-                placeholder="IS"
-              />
+            <Section title={side === "back" ? "Back Side" : "Personal Info"}>
+              {/* Front-side fields: Name, Designation */}
+              {side !== "back" && (
+                <>
+                  <div>
+                    <InputField
+                      label="Full Name"
+                      value={data.fullName}
+                      onChange={(v) => onChange({ fullName: v })}
+                      placeholder="Alex Johnson"
+                    />
+                    <FontSizeInline value={data.fontSizeName ?? 100} onChange={(v) => onChange({ fontSizeName: v })} />
+                  </div>
+                  <div>
+                    <InputField
+                      label="Designation / Title"
+                      value={data.designation}
+                      onChange={(v) => onChange({ designation: v })}
+                      placeholder="Senior Product Designer"
+                    />
+                    <FontSizeInline value={data.fontSizeTitle ?? 100} onChange={(v) => onChange({ fontSizeTitle: v })} />
+                  </div>
+                </>
+              )}
+              {/* Back-side fields: Company Name, Logo Text */}
+              {side === "back" && (
+                <>
+                  <div>
+                    <InputField
+                      label="Company Name"
+                      value={data.company}
+                      onChange={(v) => onChange({ company: v })}
+                      placeholder="Innovate Studio"
+                    />
+                    <FontSizeInline value={data.fontSizeCompany ?? 100} onChange={(v) => onChange({ fontSizeCompany: v })} />
+                  </div>
+                  <InputField
+                    label="Logo Text (Monogram)"
+                    value={data.logoText}
+                    onChange={(v) => onChange({ logoText: v.substring(0, 3) })}
+                    placeholder="IS"
+                  />
+                </>
+              )}
             </Section>
 
-            {/* Logo uploads */}
+            {/* Logo uploads — show relevant side's logo */}
             {templateId !== "custom-upload" && (
               <Section title="Logo">
-                {tpl.showBackLogo ? (
-                  <div className="space-y-4">
-                    <LogoUpload
-                      label="Front Logo"
-                      value={data.logoUrlFront}
-                      onChange={(v) => onChange({ logoUrlFront: v })}
-                      size={data.logoSizeFront ?? 100}
-                      onSizeChange={(v) => onChange({ logoSizeFront: v })}
-                    />
-                    <LogoUpload
-                      label="Back Logo"
-                      value={data.logoUrlBack}
-                      onChange={(v) => onChange({ logoUrlBack: v })}
-                      hint="Reuses front if empty"
-                      size={data.logoSizeBack ?? 100}
-                      onSizeChange={(v) => onChange({ logoSizeBack: v })}
-                    />
-                  </div>
+                {side === "back" && tpl.showBackLogo ? (
+                  <LogoUpload
+                    label="Back Logo"
+                    value={data.logoUrlBack}
+                    onChange={(v) => onChange({ logoUrlBack: v })}
+                    hint="Reuses front logo if empty"
+                    size={data.logoSizeBack ?? 100}
+                    onSizeChange={(v) => onChange({ logoSizeBack: v })}
+                  />
                 ) : (
                   <LogoUpload
                     label="Front Logo"
@@ -526,59 +539,76 @@ export default function FormPanel({ data, onChange, templateId }: Props) {
 
         {/* ── CONTACT TAB ── */}
         {activeTab === "contact" && (
-          <Section title="Contact Details">
-            <div>
-              <InputField
-                label="Phone"
-                value={data.phone}
-                onChange={(v) => onChange({ phone: v })}
-                placeholder="+1 (555) 123-4567"
-                type="tel"
-              />
-              <FontSizeInline value={data.fontSizePhone ?? 100} onChange={(v) => onChange({ fontSizePhone: v })} />
-            </div>
-            {tpl.showMobile && (
+          <Section title={side === "back" ? "Back Side — Tagline" : "Contact Details"}>
+            {/* Front-side: all contact fields */}
+            {side !== "back" && (
+              <>
+                <div>
+                  <InputField
+                    label="Phone"
+                    value={data.phone}
+                    onChange={(v) => onChange({ phone: v })}
+                    placeholder="+1 (555) 123-4567"
+                    type="tel"
+                  />
+                  <FontSizeInline value={data.fontSizePhone ?? 100} onChange={(v) => onChange({ fontSizePhone: v })} />
+                </div>
+                {tpl.showMobile && (
+                  <div>
+                    <InputField
+                      label="Mobile"
+                      value={data.mobile}
+                      onChange={(v) => onChange({ mobile: v })}
+                      placeholder="+1 (555) 987-6543"
+                      type="tel"
+                    />
+                    <FontSizeInline value={data.fontSizePhone ?? 100} onChange={(v) => onChange({ fontSizePhone: v })} />
+                  </div>
+                )}
+                {tpl.showAddress && (
+                  <div>
+                    <InputField
+                      label="Office Address"
+                      value={data.address}
+                      onChange={(v) => onChange({ address: v })}
+                      placeholder="123 Design Street, San Francisco, CA"
+                    />
+                    <FontSizeInline value={data.fontSizeAddress ?? 100} onChange={(v) => onChange({ fontSizeAddress: v })} />
+                  </div>
+                )}
+                <div>
+                  <InputField
+                    label="Email Address"
+                    value={data.email}
+                    onChange={(v) => onChange({ email: v })}
+                    placeholder="alex@company.com"
+                    type="email"
+                  />
+                  <FontSizeInline value={data.fontSizeEmail ?? 100} onChange={(v) => onChange({ fontSizeEmail: v })} />
+                </div>
+                <div>
+                  <InputField
+                    label="Website"
+                    value={data.website}
+                    onChange={(v) => onChange({ website: v })}
+                    placeholder="www.company.com"
+                  />
+                  <FontSizeInline value={data.fontSizeWebsite ?? 100} onChange={(v) => onChange({ fontSizeWebsite: v })} />
+                </div>
+              </>
+            )}
+            {/* Back-side: website/tagline only */}
+            {side === "back" && (
               <div>
                 <InputField
-                  label="Mobile"
-                  value={data.mobile}
-                  onChange={(v) => onChange({ mobile: v })}
-                  placeholder="+1 (555) 987-6543"
-                  type="tel"
+                  label="Website / Tagline"
+                  value={data.website}
+                  onChange={(v) => onChange({ website: v })}
+                  placeholder="www.company.com"
                 />
-                <FontSizeInline value={data.fontSizePhone ?? 100} onChange={(v) => onChange({ fontSizePhone: v })} />
+                <FontSizeInline value={data.fontSizeWebsite ?? 100} onChange={(v) => onChange({ fontSizeWebsite: v })} />
               </div>
             )}
-            {tpl.showAddress && (
-              <div>
-                <InputField
-                  label="Office Address"
-                  value={data.address}
-                  onChange={(v) => onChange({ address: v })}
-                  placeholder="123 Design Street, San Francisco, CA"
-                />
-                <FontSizeInline value={data.fontSizeAddress ?? 100} onChange={(v) => onChange({ fontSizeAddress: v })} />
-              </div>
-            )}
-            <div>
-              <InputField
-                label="Email Address"
-                value={data.email}
-                onChange={(v) => onChange({ email: v })}
-                placeholder="alex@company.com"
-                type="email"
-              />
-              <FontSizeInline value={data.fontSizeEmail ?? 100} onChange={(v) => onChange({ fontSizeEmail: v })} />
-            </div>
-            <div>
-              <InputField
-                label="Website"
-                value={data.website}
-                onChange={(v) => onChange({ website: v })}
-                placeholder="www.company.com"
-              />
-              <FontSizeInline value={data.fontSizeWebsite ?? 100} onChange={(v) => onChange({ fontSizeWebsite: v })} />
-            </div>
           </Section>
         )}
 
