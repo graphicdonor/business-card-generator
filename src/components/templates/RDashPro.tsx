@@ -221,7 +221,7 @@ export default function RDashPro({ data, side = "front", scale = 1 }: Props) {
         {/* ── Email – viewBox 8.51×5.81 → 20×20 box (scale 2.35, centered vertically) ── */}
         {hasEmail && (
           <g transform={`translate(60, ${emailY})`}>
-            <g transform="translate(0, 3) scale(2.35)">
+            <g transform="translate(0, 2) scale(2.85)">
               <path
                 d="M.68,0A.687.687,0,0,0,0,.68V5.13a.687.687,0,0,0,.68.68H7.83a.687.687,0,0,0,.68-.68V.68A.687.687,0,0,0,7.83,0Zm.35.58H7.48L4.35,3.45s-.16.04-.2,0L1.03.58M.58.96l2.1,1.93L.58,4.84Zm7.34,0V4.84L5.82,2.89ZM3.11,3.28l.65.6a.713.713,0,0,0,.98,0l.65-.6L7.48,5.22H1.01L3.1,3.28Z"
                 fill={navy}
