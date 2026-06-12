@@ -214,7 +214,7 @@ export default function BuilderPage({ params }: Props) {
             onClick={handleCloudSave}
             disabled={cloudSaving}
             className={cn(
-              "hidden sm:flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-lg border transition-all",
+              "flex items-center gap-1.5 px-2.5 sm:px-3 py-2 text-xs font-semibold rounded-lg border transition-all",
               cloudSaved
                 ? "bg-emerald-50 text-emerald-600 border-emerald-200"
                 : "bg-white text-slate-600 border-slate-200 hover:border-slate-300"
@@ -222,7 +222,7 @@ export default function BuilderPage({ params }: Props) {
             title="Save to your account"
           >
             {cloudSaved ? <CheckCircle size={13} /> : <Cloud size={13} />}
-            {cloudSaved ? "Saved!" : "Save to Account"}
+            <span className="hidden sm:inline">{cloudSaved ? "Saved!" : "Save to Account"}</span>
           </button>
 
           {/* Export */}
