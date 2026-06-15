@@ -33,3 +33,6 @@ next-env.d.ts
 
 # One-time setup scripts (contain credentials)
 scripts/
+
+# Local Netlify folder
+.netlify
